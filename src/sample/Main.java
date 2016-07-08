@@ -24,4 +24,9 @@ public class Main extends Application {
 public void setName() {
 
 }
+
+    public void setAge() {
+
+    }
+
 }
