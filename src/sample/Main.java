@@ -28,6 +28,7 @@ public void setName() {
 
     public void setAge() {
         int mazzafakka = 10;
+        String s = "hoi";
     }
 
 }
