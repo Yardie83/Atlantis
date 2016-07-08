@@ -14,6 +14,7 @@ public class Main extends Application {
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root, 300, 275));
         primaryStage.show();
+
     }
 
 
@@ -26,7 +27,9 @@ public void setName() {
 }
 
     public void setAge() {
-
+        int mazzafakka = 10;
     }
 
 }
+
+
