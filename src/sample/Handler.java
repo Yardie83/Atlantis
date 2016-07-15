@@ -38,6 +38,9 @@ public class Handler extends Thread {
                 if (input == null) {
                     return;
                 }
+
+                System.out.println(input + "/n");
+
                 for (PrintWriter writer : writers) {
                     writer.println("MESSAGE " + name + ": " + input);
                 }

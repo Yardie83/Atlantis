@@ -16,6 +16,7 @@ public class Model {
             this.waitForConnections();
         } catch (IOException e) {
             System.out.println("Error kei anig");
+            e.printStackTrace();
         }
     }
 
@@ -27,7 +28,9 @@ public class Model {
 
         try {
             while (true) {
+                System.out.println("waiting for client...");
                 new Handler(listener.accept()).run();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
