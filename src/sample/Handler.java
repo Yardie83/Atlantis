@@ -25,6 +25,7 @@ public class Handler extends Thread {
     }
 
     public void run() {
+        System.out.println("New client connected");
 
         try {
 
