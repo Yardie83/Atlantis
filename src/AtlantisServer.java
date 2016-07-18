@@ -43,18 +43,19 @@ public class AtlantisServer {
         boolean found = false;
         while (!found) {
             for (ClientThread thread : clientThreads) {
-                if (thread.getClientNumber() == clientNumber) {
+                if (thread.getClientNumber() == clientNumber-1) {
                     chatServerThreadToRemove = thread;
                     clientThreads.remove(chatServerThreadToRemove.getClientNumber() - 1);
+
                     for (ClientThread chatServerThread : clientThreads) {
-                        chatServerThread.sendMessage(String.valueOf("Client #: " + clientNumber + "left"));
+                        chatServerThread.sendMessage(String.valueOf("Client #: " + clientNumber + " left"));
                     }
                     found = true;
                 }
             }
         }
+        System.out.println("Client #: " + clientNumber + "disconnected from the server");
         if (clientThreads.size() < 2) {
-            System.out.println("Client # " + clientNumber + "disconnected from the server");
             System.out.println(clientThreads.size() + " client connected");
         } else {
             System.out.println(clientThreads.size() + " clients connected");

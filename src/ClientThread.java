@@ -32,8 +32,11 @@ public class ClientThread extends Thread {
                 this.inReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 this.outWriter = new PrintWriter(clientSocket.getOutputStream(), true);
                 printWriters.add(outWriter);
+
                 System.out.println("PrintWriters: " + printWriters.size());
-                outWriter.println("Welcome to the Server");
+
+                sendWelcomeMessage();
+
                 String fromClientMessage, toClientMessage;
                 while (true) {
                     fromClientMessage = inReader.readLine();
@@ -45,17 +48,31 @@ public class ClientThread extends Thread {
                     }
                     if (fromClientMessage.equals("QUIT")) {
                         sendGoodBye();
+                        printWriters.remove(this.outWriter);
+                        System.out.println(printWriters.size());
                         server.removeThread(clientNumber);
                         running = false;
                     }
                 }
             } catch (IOException e) {
                 System.out.println("User #: " + clientNumber + " disconnected \n");
+                printWriters.remove(this.outWriter);
                 server.removeThread(clientNumber);
                 e.printStackTrace();
                 running = false;
             }
         }
+    }
+
+    private void sendWelcomeMessage() {
+
+        outWriter.println("*****************************************\n"
+                + "Welcome to the Atlantis Game Server \n"
+                + "*****************************************\n"
+                + "Server IP Address: "
+                + clientSocket.getLocalAddress()
+                + "\nConnected to Server Port " + clientSocket.getLocalPort()
+                + "\n*****************************************\n");
     }
 
     private void sendGoodBye() {
