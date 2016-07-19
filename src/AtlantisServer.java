@@ -24,47 +24,40 @@ public class AtlantisServer {
 
 
         while (true) {
+
+            printUserCount();
+
             try {
-                System.out.println(clientThreads.size() + " user connected");
+
                 clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
+
                 ClientThread chatServerThread = new ClientThread(clientSocket, ++clientNumber, server);
                 clientThreads.add(chatServerThread);
                 chatServerThread.start();
+
             } catch (IOException e) {
-                System.out.println("User: " + clientSocket.getInetAddress() + " disconnected");
-            } finally {
+                System.out.println("Server was unable to accept user connection");
             }
         }
     }
 
-    public void removeThread(int clientNumber) {
-        ClientThread chatServerThreadToRemove;
-        boolean found = false;
-        while (!found) {
-            for (ClientThread thread : clientThreads) {
-                if (thread.getClientNumber() == clientNumber-1) {
-                    chatServerThreadToRemove = thread;
-                    clientThreads.remove(chatServerThreadToRemove.getClientNumber() - 1);
 
-                    for (ClientThread chatServerThread : clientThreads) {
-                        chatServerThread.sendMessage(String.valueOf("Client #: " + clientNumber + " left"));
-                    }
-                    found = true;
-                }
-            }
-        }
-        System.out.println("Client #: " + clientNumber + "disconnected from the server");
-        if (clientThreads.size() < 2) {
-            System.out.println(clientThreads.size() + " client connected");
-        } else {
-            System.out.println(clientThreads.size() + " clients connected");
+    private static void printUserCount(){
+        if (clientThreads.size() == 0) {
+            System.out.println("No user currently connected");
+        } else if (clientThreads.size() == 1){
+            System.out.println(clientThreads.size() + " user currently connected");
+        }else{
+            System.out.println(clientThreads.size() + " users currently connected");
         }
     }
 
-    public ArrayList<ClientThread> getClientThreads() {
-        return clientThreads;
+
+    public void removeThread(long threadID) {
+
     }
+
 }
 
 
