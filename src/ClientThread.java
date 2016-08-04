@@ -31,7 +31,7 @@ class ClientThread extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (running) {
             try {
                 this.inReader = new ObjectInputStream(clientSocket.getInputStream());
                 this.outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
