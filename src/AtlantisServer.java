@@ -5,12 +5,12 @@ import java.util.ArrayList;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
+ *
  */
 
 public class AtlantisServer {
 
     private static final int PORT = 9000;
-    private static Socket clientSocket;
     private static int clientNumber;
     private static ArrayList<ClientThread> clientThreads = new ArrayList<>();
 
@@ -29,7 +29,7 @@ public class AtlantisServer {
 
             try {
 
-                clientSocket = serverSocket.accept();
+                Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
 
                 ClientThread chatServerThread = new ClientThread(clientSocket, ++clientNumber, server);
@@ -54,7 +54,16 @@ public class AtlantisServer {
     }
 
 
-    public void removeThread(long threadID) {
+    void removeThread(long threadID) {
+        System.out.println(threadID);
+        System.out.println(clientThreads.size());
+
+        for (ClientThread clientThread : clientThreads){
+            if (clientThread.getId() == threadID){
+                clientThreads.remove(threadID);
+            }
+        }
+        System.out.println(clientThreads.size());
 
     }
 
