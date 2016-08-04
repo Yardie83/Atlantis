@@ -91,14 +91,15 @@ class ClientThread extends Thread {
 
     private void disconnectUser() throws IOException {
 
-        sendMessageToAllClients(new Message(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName() + " left"));
-
         server.removeThread(currentThread().getId());
+
+        //sendMessageToAllClients(new Message(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName() + " left"));
+
         outputStreams.remove(this.outputStream);
+        this.interrupt();
         inReader.close();
         outputStream.close();
         clientSocket.close();
-        System.out.println(outputStreams.size());
 
         running = false;
     }

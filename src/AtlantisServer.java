@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -12,7 +13,7 @@ public class AtlantisServer {
 
     private static final int PORT = 9000;
     private static int clientNumber;
-    private static ArrayList<ClientThread> clientThreads = new ArrayList<>();
+    private static HashMap<Long, Socket> clientThreads = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
 
@@ -33,7 +34,7 @@ public class AtlantisServer {
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
 
                 ClientThread chatServerThread = new ClientThread(clientSocket, ++clientNumber, server);
-                clientThreads.add(chatServerThread);
+                clientThreads.put(chatServerThread.getId(), clientSocket);
                 chatServerThread.start();
 
             } catch (IOException e) {
@@ -58,16 +59,8 @@ public class AtlantisServer {
         System.out.println(threadID);
         System.out.println(clientThreads.size());
 
-        for (ClientThread clientThread : clientThreads){
-            if (clientThread.getId() == threadID){
-                clientThreads.remove(threadID);
-            }
-        }
+        clientThreads.remove(threadID);
         System.out.println(clientThreads.size());
 
     }
-
 }
-
-
-
