@@ -1,3 +1,5 @@
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Created by Hermann Grieder on 19.07.2016.
  */

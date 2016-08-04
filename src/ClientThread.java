@@ -96,12 +96,13 @@ class ClientThread extends Thread {
         //sendMessageToAllClients(new Message(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName() + " left"));
 
         outputStreams.remove(this.outputStream);
+        running = false;
         this.interrupt();
         inReader.close();
         outputStream.close();
         clientSocket.close();
 
-        running = false;
+
     }
 
     private void sendWelcomeMessage() throws IOException {
