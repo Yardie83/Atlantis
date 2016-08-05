@@ -17,15 +17,17 @@ class ClientThread extends Thread {
     private ObjectOutputStream outputStream;
     private boolean running = true;
     private static HashSet<ObjectOutputStream> outputStreams = new HashSet<>();
+    private DatabaseHandler databaseHandler;
 
 
-    ClientThread(Socket clientSocket, int clientNumber, AtlantisServer server) {
+    ClientThread(Socket clientSocket, int clientNumber, AtlantisServer server, DatabaseHandler databaseHandler) {
 
         super();
 
         this.clientSocket = clientSocket;
         this.clientNumber = clientNumber;
         this.server = server;
+        this.databaseHandler = databaseHandler;
 
     }
 
@@ -58,12 +60,24 @@ class ClientThread extends Thread {
             Message message = (Message) inReader.readObject();
             System.out.println("User " + clientNumber + "-> " + message.getMessage());
 
-            if (message.getMessageType() == MessageType.DISCONNECT) {
-                disconnectUser();
-            } else if (message.getMessageType() == MessageType.CHAT) {
-                handleChatMessage(message);
-            } else if (message.getMessageType() == MessageType.CHAT) {
-                getGameList();
+            switch (message.getMessageType()){
+
+                case DISCONNECT:
+                    disconnectUser();
+                    break;
+
+                case CHAT:
+                    handleChatMessage(message);
+                    break;
+
+                case CREATEPROFILE:
+                    databaseHandler.createProfile(message);
+                    break;
+
+                case LOGIN:
+                    //createNewUser(message);
+                    break;
+
             }
         } catch (IOException e) {
             System.out.println("Unable to receive message");
@@ -73,7 +87,6 @@ class ClientThread extends Thread {
             System.out.println("Class \"Message\" not found");
         }
     }
-
 
     private void handleChatMessage(Message message) throws IOException {
         if (message.getMessageType() == MessageType.CHAT && message.getMessage().equals("QUIT")) {

@@ -23,17 +23,21 @@ public class AtlantisServer {
         System.out.println("Server is running");
         System.out.println("Listening on port: " + PORT);
 
-
         while (true) {
 
             printUserCount();
 
             try {
 
+                //Create Database connection
+                System.out.println("Create Database Handler");
+                DatabaseHandler databaseHandler = new DatabaseHandler();
+                System.out.println("Done");
+
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
 
-                ClientThread chatServerThread = new ClientThread(clientSocket, ++clientNumber, server);
+                ClientThread chatServerThread = new ClientThread(clientSocket, ++clientNumber, server, databaseHandler);
                 clientThreads.put(chatServerThread.getId(), clientSocket);
                 chatServerThread.start();
 
@@ -42,7 +46,6 @@ public class AtlantisServer {
             }
         }
     }
-
 
     private static void printUserCount(){
         if (clientThreads.size() == 0) {
@@ -54,13 +57,11 @@ public class AtlantisServer {
         }
     }
 
-
     void removeThread(long threadID) {
         System.out.println(threadID);
         System.out.println(clientThreads.size());
 
         clientThreads.remove(threadID);
         System.out.println(clientThreads.size());
-
     }
 }
