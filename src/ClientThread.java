@@ -41,17 +41,29 @@ class ClientThread extends Thread {
                 System.out.println("OutputStreams: " + outputStreams.size());
 
                 sendWelcomeMessage();
+                sendGameList();
 
                 while (running) {
                     receiveMessage();
                 }
 
             } catch (IOException e) {
-                System.out.println("Unable to create reader and/or writer. Client connection status: " + clientSocket.isConnected());
+                System.out.println("Unable to create reader and/or writer");
                 return;
             } finally {
                 System.out.println("Thread " + currentThread().getName() + " ended");
             }
+        }
+    }
+
+    private void sendGameList() {
+
+        databaseHandler.getGameList();
+
+        try {
+            sendMessage(new Message(MessageType.GAMELIST, "send game List Object Here"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -91,22 +103,18 @@ class ClientThread extends Thread {
     private void handleChatMessage(Message message) throws IOException {
         if (message.getMessageType() == MessageType.CHAT && message.getMessage().equals("QUIT")) {
             disconnectUser();
-        } else if (message.getMessageType() == MessageType.CHAT && message.getMessage().equals("HELP")) {
+        } else if (message.getMessageType() == MessageType.CHAT &&  message.getMessage().toString().equalsIgnoreCase("HELP")) {
             sendHelpMessage();
         } else {
             sendMessageToAllClients(message);
         }
-
-    }
-
-    private void getGameList() {
     }
 
     private void disconnectUser() throws IOException {
 
         server.removeThread(currentThread().getId());
 
-        //sendMessageToAllClients(new Message(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName() + " left"));
+        sendMessageToAllClients(new Message(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName() + " left the chat"));
 
         outputStreams.remove(this.outputStream);
         running = false;
@@ -114,8 +122,6 @@ class ClientThread extends Thread {
         inReader.close();
         outputStream.close();
         clientSocket.close();
-
-
     }
 
     private void sendWelcomeMessage() throws IOException {
@@ -127,7 +133,7 @@ class ClientThread extends Thread {
                 + clientSocket.getLocalAddress()
                 + "\nConnected to Server Port " + clientSocket.getLocalPort()
                 + "\n*****************************************\n"
-                + "\n For help type \"HELP\" (....needs to be implemented)"));
+                + "\nFor help type \"HELP\" (....needs to be implemented)"));
     }
 
     public void sendMessage(Message message) throws IOException {
