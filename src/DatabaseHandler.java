@@ -1,9 +1,9 @@
-import java.io.IOException;
 import java.sql.*;
 
 /**
  * Created by Loris Grether on 05.08.2016.
  */
+
 public class DatabaseHandler {
 
     private Statement stmt;
@@ -22,8 +22,7 @@ public class DatabaseHandler {
         String optionInfo = "?connectTimeout=5000";
         System.out.println(("Opening connection to " + serverInfo + "\n"));
         try {
-
-            cn = DriverManager.getConnection(serverInfo, "root", this.blabla);
+            cn = DriverManager.getConnection(serverInfo + optionInfo, "root", this.blabla);
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -57,6 +56,10 @@ public class DatabaseHandler {
             e.printStackTrace();
         }
     }
+
+    public void getGameList() {
+    }
+
 
 
 
@@ -201,4 +204,7 @@ public class DatabaseHandler {
 
 
     private String blabla = "maschine1";
+
+
+
 }

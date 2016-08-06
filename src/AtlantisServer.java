@@ -58,7 +58,7 @@ public class AtlantisServer {
     }
 
     void removeThread(long threadID) {
-        System.out.println(threadID);
+        System.out.println("Thread ID: " + threadID);
         System.out.println(clientThreads.size());
 
         clientThreads.remove(threadID);
