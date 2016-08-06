@@ -200,5 +200,5 @@ public class DatabaseHandler {
 
 
 
-    private String blabla = "maschine1";
+    private String blabla = "";
 }
