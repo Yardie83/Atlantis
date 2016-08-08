@@ -11,7 +11,6 @@ import java.util.HashSet;
 class ClientThread extends Thread {
 
     private Socket clientSocket;
-    private int clientNumber;
     private AtlantisServer server;
     private ObjectInputStream inReader;
     private ObjectOutputStream outputStream;
@@ -20,12 +19,11 @@ class ClientThread extends Thread {
     private DatabaseHandler databaseHandler;
 
 
-    ClientThread(Socket clientSocket, int clientNumber, AtlantisServer server, DatabaseHandler databaseHandler) {
+    ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler) {
 
         super();
 
         this.clientSocket = clientSocket;
-        this.clientNumber = clientNumber;
         this.server = server;
         this.databaseHandler = databaseHandler;
 
@@ -70,7 +68,7 @@ class ClientThread extends Thread {
     private void receiveMessage() throws IOException {
         try {
             Message message = (Message) inReader.readObject();
-            System.out.println("User " + clientNumber + "-> " + message.getMessage());
+            System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessage());
 
             switch (message.getMessageType()){
 
