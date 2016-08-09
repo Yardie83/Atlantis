@@ -6,7 +6,6 @@ import java.util.HashSet;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
- *
  */
 class ClientThread extends Thread {
 
@@ -56,7 +55,7 @@ class ClientThread extends Thread {
 
     private void sendGameList() {
 
-        databaseHandler.getGameList();
+        //databaseHandler.getGameList();
 
         try {
             sendMessage(new Message(MessageType.GAMELIST, "send game List Object Here"));
@@ -70,7 +69,7 @@ class ClientThread extends Thread {
             Message message = (Message) inReader.readObject();
             System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessage());
 
-            switch (message.getMessageType()){
+            switch (message.getMessageType()) {
 
                 case DISCONNECT:
                     disconnectUser();
@@ -85,9 +84,12 @@ class ClientThread extends Thread {
                     break;
 
                 case LOGIN:
-                    //createNewUser(message);
+                    databaseHandler.userLogin(message);
                     break;
 
+                case NEWGAME:
+                    databaseHandler.newGame(message);
+                    break;
             }
         } catch (IOException e) {
             System.out.println("Unable to receive message");
@@ -101,7 +103,7 @@ class ClientThread extends Thread {
     private void handleChatMessage(Message message) throws IOException {
         if (message.getMessageType() == MessageType.CHAT && message.getMessage().equals("QUIT")) {
             disconnectUser();
-        } else if (message.getMessageType() == MessageType.CHAT &&  message.getMessage().toString().equalsIgnoreCase("HELP")) {
+        } else if (message.getMessageType() == MessageType.CHAT && message.getMessage().toString().equalsIgnoreCase("HELP")) {
             sendHelpMessage();
         } else {
             sendMessageToAllClients(message);
@@ -139,12 +141,14 @@ class ClientThread extends Thread {
     }
 
     private void sendMessageToAllClients(Message message) {
-        for (ObjectOutputStream outputStream : outputStreams) {
-            try {
-                System.out.println("Sending to User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessage());
-                outputStream.writeObject(message);
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (outputStreams.size() != 0) {
+            for (ObjectOutputStream outputStream : outputStreams) {
+                try {
+                    System.out.println("Sending to User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessage());
+                    outputStream.writeObject(message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

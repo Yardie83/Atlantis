@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Created by Loris Grether on 05.08.2016.
@@ -23,7 +24,7 @@ public class DatabaseHandler {
         System.out.println(("Opening connection to " + serverInfo + "\n"));
         try {
 
-            cn = DriverManager.getConnection(serverInfo, "root", this.blabla);
+            cn = DriverManager.getConnection(serverInfo, "root", "maschine1");
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -58,147 +59,27 @@ public class DatabaseHandler {
         }
     }
 
+    public void userLogin(Message message) {
 
+        String[] userNamePassword = message.getMessage().toString().split(",");
 
+        String userName = userNamePassword[0];
+        String userPassword = userNamePassword[1];
 
+        System.out.println(userName + " " + userPassword);
+    }
 
+    public void newGame(Message message) {
 
+        String[] gameInformation = message.getMessage().toString().split(",");
 
+        String gameName = gameInformation[0];
+        int nrOfPlayers = Integer.parseInt(gameInformation[1]);
 
+        System.out.println(gameName + " " + nrOfPlayers);
 
+        //TODO: Create game instance here
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private String blabla = "";
+    }
 }
