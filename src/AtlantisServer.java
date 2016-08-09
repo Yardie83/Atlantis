@@ -12,7 +12,6 @@ import java.util.HashMap;
 public class AtlantisServer {
 
     private static final int PORT = 9000;
-    private static int clientNumber;
     private static HashMap<Long, Socket> clientThreads = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
@@ -23,21 +22,19 @@ public class AtlantisServer {
         System.out.println("Server is running");
         System.out.println("Listening on port: " + PORT);
 
+        //Create Database connection
+        DatabaseHandler databaseHandler = new DatabaseHandler();
+
         while (true) {
 
             printUserCount();
 
             try {
 
-                //Create Database connection
-                System.out.println("Create Database Handler");
-                DatabaseHandler databaseHandler = new DatabaseHandler();
-                System.out.println("Done");
-
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
 
-                ClientThread chatServerThread = new ClientThread(clientSocket, ++clientNumber, server, databaseHandler);
+                ClientThread chatServerThread = new ClientThread(clientSocket, server, databaseHandler);
                 clientThreads.put(chatServerThread.getId(), clientSocket);
                 chatServerThread.start();
 
@@ -59,8 +56,8 @@ public class AtlantisServer {
 
     void removeThread(long threadID) {
         System.out.println("Thread ID: " + threadID);
-        System.out.println(clientThreads.size());
 
+        System.out.println(clientThreads.size());
         clientThreads.remove(threadID);
         System.out.println(clientThreads.size());
     }
