@@ -107,8 +107,6 @@ public class DatabaseHandler {
         PreparedStatement preparedStatement = null;
         rs = null;
 
-        System.out.println("checkUserEntries");
-
         String query = "SELECT COUNT(*) FROM user WHERE userName = ?";
 
         if (message.getMessageType() == MessageType.CREATEPROFILE) {
@@ -127,7 +125,6 @@ public class DatabaseHandler {
         rs = preparedStatement.executeQuery();
         rs.next();
 
-        System.out.println("Number:" + rs.getInt(1));
         return rs.getInt(1);
     }
 

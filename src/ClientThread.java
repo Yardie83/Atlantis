@@ -49,7 +49,36 @@ class ClientThread extends Thread {
                 System.out.println("Unable to create reader and/or writer");
                 return;
             } finally {
-                System.out.println("Thread " + currentThread().getName() + " ended");
+                System.out.println("Thread " + currentThread().getName() + " terminated");
+            }
+        }
+    }
+
+    private void sendWelcomeMessage() throws IOException {
+
+        outputStream.writeObject(new Message(MessageType.CHAT, "*****************************************\n"
+                + "Welcome to the Atlantis Game Server \n"
+                + "*****************************************\n"
+                + "Server IP Address: "
+                + clientSocket.getLocalAddress()
+                + "\nConnected to Server Port " + clientSocket.getLocalPort()
+                + "\n*****************************************"));
+    }
+
+    public void sendMessage(Message message) throws IOException {
+        outputStream.writeObject(message);
+        System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
+    }
+
+    private void sendMessageToAllClients(Message message) {
+        if (outputStreams.size() > 0) {
+            for (ObjectOutputStream outputStream : outputStreams) {
+                try {
+                    System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
+                    outputStream.writeObject(message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -79,30 +108,25 @@ class ClientThread extends Thread {
             System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
 
             switch (message.getMessageType()) {
-
-                case DISCONNECT:
-                    disconnectUser();
-                    break;
-
-                case CHAT:
-                    handleChatMessage(message);
-                    break;
-
-                case CREATEPROFILE:
-                    this.handleCreateProfile(message);
-                    break;
-
                 case LOGIN:
                     this.handleLogin(message);
                     break;
-
+                case CREATEPROFILE:
+                    this.handleCreateProfile(message);
+                    break;
+                case CHAT:
+                    this.handleChatMessage(message);
+                    break;
+                case DISCONNECT:
+                    this.handleDisconnectUser();
+                    break;
                 case NEWGAME:
                     databaseHandler.newGame(message);
                     break;
             }
         } catch (IOException e) {
             System.out.println("Unable to receive message");
-            disconnectUser();
+            handleDisconnectUser();
 
         } catch (ClassNotFoundException e) {
             System.out.println("Class \"Message\" not found");
@@ -112,10 +136,8 @@ class ClientThread extends Thread {
     private void handleLogin(Message message) {
         try {
             if (databaseHandler.userLogin(message)) {
-
                 sendMessage(new Message(MessageType.LOGIN, true));
-
-            } else {
+            } else if (!(databaseHandler.userLogin(message))){
                 sendMessage(new Message(MessageType.LOGIN, false));
             }
         } catch (IOException e) {
@@ -126,9 +148,7 @@ class ClientThread extends Thread {
     private void handleCreateProfile(Message message) {
         try {
             if (databaseHandler.createProfile(message)) {
-
                 sendMessage(new Message(MessageType.CREATEPROFILE, true));
-
             } else {
                 sendMessage(new Message(MessageType.CREATEPROFILE, false));
             }
@@ -139,58 +159,22 @@ class ClientThread extends Thread {
 
     private void handleChatMessage(Message message) throws IOException {
         if (message.getMessageType() == MessageType.CHAT && message.getMessageObject().equals("QUIT")) {
-            disconnectUser();
-        } else if (message.getMessageType() == MessageType.CHAT && message.getMessageObject().toString().equalsIgnoreCase("HELP")) {
-            sendHelpMessage();
+            handleDisconnectUser();
         } else {
             sendMessageToAllClients(message);
         }
     }
 
-    private void disconnectUser() throws IOException {
-
+    private void handleDisconnectUser() throws IOException {
         server.removeThread(currentThread().getId());
-
-        sendMessageToAllClients(new Message(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName() + " left the chat"));
-
         outputStreams.remove(this.outputStream);
         running = false;
         this.interrupt();
         inReader.close();
         outputStream.close();
         clientSocket.close();
-    }
-
-    private void sendWelcomeMessage() throws IOException {
-
-        outputStream.writeObject(new Message(MessageType.CHAT, "*****************************************\n"
-                + "Welcome to the Atlantis Game Server \n"
-                + "*****************************************\n"
-                + "Server IP Address: "
-                + clientSocket.getLocalAddress()
-                + "\nConnected to Server Port " + clientSocket.getLocalPort()
-                + "\n*****************************************\n"
-                + "\nFor help type \"HELP\" (....needs to be implemented)"));
-    }
-
-    public void sendMessage(Message message) throws IOException {
-        outputStream.writeObject(message);
-    }
-
-    private void sendMessageToAllClients(Message message) {
-        if (outputStreams.size() != 0) {
-            for (ObjectOutputStream outputStream : outputStreams) {
-                try {
-                    System.out.println("Sending to User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
-                    outputStream.writeObject(message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void sendHelpMessage() throws IOException {
-        outputStream.writeObject(new Message(MessageType.CHAT, "I already said, it needs to be implemented!"));
+        sendMessageToAllClients(new Message(MessageType.CHAT, "User "
+                + clientSocket.getInetAddress().getCanonicalHostName()
+                + " left the chat"));
     }
 }

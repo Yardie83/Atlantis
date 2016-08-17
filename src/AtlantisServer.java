@@ -58,9 +58,10 @@ public class AtlantisServer {
     void removeThread(long threadID) {
         System.out.println("Thread ID: " + threadID);
 
-        System.out.println(clientThreads.size());
+        System.out.println("Active Threads: " + clientThreads.size());
         clientThreads.remove(threadID);
-        System.out.println(clientThreads.size());
+        System.out.println("Thread# " + threadID + " removed");
+        System.out.println("Active Threads: " + clientThreads.size());
     }
 
     private int createGuestNumber(){
