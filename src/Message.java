@@ -6,22 +6,22 @@ import java.io.Serializable;
 public class Message implements Serializable{
 
     private MessageType messageType;
-    private Object message;
+    private Object messageObject;
 
     public Message(MessageType messageType){
         this.messageType = messageType;
     }
 
-    public Message(MessageType messageType, Object message){
+    public Message(MessageType messageType, Object messageObject){
         this.messageType = messageType;
-        this.message = message;
+        this.messageObject = messageObject;
     }
 
-    public Object getMessage() {
-        return message;
+    public Object getMessageObject() {
+        return messageObject;
     }
-    public void setMessage(String message){
-        this.message = message;
+    public void setMessageObject(String messageObject){
+        this.messageObject = messageObject;
     }
 
     public MessageType getMessageType(){

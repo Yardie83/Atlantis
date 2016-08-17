@@ -1,6 +1,4 @@
-import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
 
 /**
  * Created by Loris Grether on 05.08.2016.
@@ -43,16 +41,22 @@ public class DatabaseHandler {
         }
     }
 
-    public void createProfile(Message message) {
+    public boolean createProfile(Message message) {
 
-        String[] userNamePassword = message.getMessage().toString().split(",");
+        System.out.println("createProfile");
+
+        String[] userNamePassword = message.getMessageObject().toString().split(",");
 
         String userName = userNamePassword[0];
         String userPassword = userNamePassword[1];
 
+        boolean isSuccess = false;
+
         try {
 
-            if (checkUserName(userName) == 0) {
+            if (checkUserEntries(userName, userPassword, message) == 0) {
+
+                System.out.println("Success");
 
                 String sql = "INSERT INTO user (UserName, Password) VALUES (?, ?)";
                 PreparedStatement statement = cn.prepareStatement(sql);
@@ -61,83 +65,75 @@ public class DatabaseHandler {
                 statement.executeUpdate();
                 statement.close();
 
-                //TODO: Positive feedback
-
+                isSuccess = true;
             } else {
-                //TODO: Negative feedback
+
+                System.out.println("not success");
+
+                isSuccess = false;
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-
-    private int checkUserName(String userName) throws SQLException {
-
-        PreparedStatement preparedStatement = null;
-        rs = null;
-
-        try {
-
-            String query = "SELECT COUNT(*) FROM user WHERE userName = ?";
-            preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            preparedStatement.setString(1, userName);
-            rs = preparedStatement.executeQuery();
-            rs.next();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         } finally {
-            return rs.getInt(1);
+            return isSuccess;
         }
     }
 
-    public void userLogin(Message message) {
+    public boolean userLogin(Message message) {
 
-        String[] userNamePassword = message.getMessage().toString().split(",");
+        String[] userNamePassword = message.getMessageObject().toString().split(",");
 
         String userName = userNamePassword[0];
         String userPassword = userNamePassword[1];
 
-        if (checkLogin(userName, userPassword) == 1) {
+        boolean isValid = false;
 
-
-            //TODO: Do the login stuff and positive anser to the client
-        } else {
-            //TODO: Give error feedback
-
+        try {
+            if (checkUserEntries(userName, userPassword, message) == 1) {
+                isValid = true;
+            } else {
+                isValid = false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return isValid;
         }
     }
 
-    private int checkLogin(String userName, String userPassword) {
+    private int checkUserEntries(String userName, String userPassword, Message message) throws SQLException {
 
         PreparedStatement preparedStatement = null;
         rs = null;
 
-        int occurrence = 0;
+        System.out.println("checkUserEntries");
 
-        try {
+        String query = "SELECT COUNT(*) FROM user WHERE userName = ?";
 
-            String query = "SELECT COUNT(*) FROM user WHERE userName = ? AND password = ?";
+        if (message.getMessageType() == MessageType.CREATEPROFILE) {
+
+            preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            preparedStatement.setString(1, userName);
+
+        } else if (message.getMessageType() == MessageType.LOGIN) {
+
+            query = "SELECT COUNT(*) FROM user WHERE userName = ? AND password = ?";
             preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setString(1, userName);
             preparedStatement.setString(2, userPassword);
-            rs = preparedStatement.executeQuery();
-            rs.next();
-
-            occurrence = rs.getInt(1);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            return occurrence;
         }
+
+        rs = preparedStatement.executeQuery();
+        rs.next();
+
+        System.out.println("Number:" + rs.getInt(1));
+        return rs.getInt(1);
     }
 
     public void newGame(Message message) {
 
-        String[] gameInformation = message.getMessage().toString().split(",");
+        String[] gameInformation = message.getMessageObject().toString().split(",");
 
         String gameName = gameInformation[0];
         int nrOfPlayers = Integer.parseInt(gameInformation[1]);
@@ -145,7 +141,5 @@ public class DatabaseHandler {
         System.out.println(gameName + " " + nrOfPlayers);
 
         //TODO: Create game instance here
-
-
     }
 }

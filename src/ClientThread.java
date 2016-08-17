@@ -67,7 +67,7 @@ class ClientThread extends Thread {
     private void receiveMessage() throws IOException {
         try {
             Message message = (Message) inReader.readObject();
-            System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessage());
+            System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
 
             switch (message.getMessageType()) {
 
@@ -80,11 +80,11 @@ class ClientThread extends Thread {
                     break;
 
                 case CREATEPROFILE:
-                    databaseHandler.createProfile(message);
+                    this.handleCreateProfile(message);
                     break;
 
                 case LOGIN:
-                    databaseHandler.userLogin(message);
+                    this.handleLogin(message);
                     break;
 
                 case NEWGAME:
@@ -100,10 +100,38 @@ class ClientThread extends Thread {
         }
     }
 
+    private void handleLogin(Message message) {
+        try {
+            if (databaseHandler.userLogin(message)) {
+
+                sendMessage(new Message(MessageType.LOGIN, true));
+
+            } else {
+                sendMessage(new Message(MessageType.LOGIN, false));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleCreateProfile(Message message) {
+        try {
+            if (databaseHandler.createProfile(message)) {
+
+                sendMessage(new Message(MessageType.CREATEPROFILE, true));
+
+            } else {
+                sendMessage(new Message(MessageType.CREATEPROFILE, false));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void handleChatMessage(Message message) throws IOException {
-        if (message.getMessageType() == MessageType.CHAT && message.getMessage().equals("QUIT")) {
+        if (message.getMessageType() == MessageType.CHAT && message.getMessageObject().equals("QUIT")) {
             disconnectUser();
-        } else if (message.getMessageType() == MessageType.CHAT && message.getMessage().toString().equalsIgnoreCase("HELP")) {
+        } else if (message.getMessageType() == MessageType.CHAT && message.getMessageObject().toString().equalsIgnoreCase("HELP")) {
             sendHelpMessage();
         } else {
             sendMessageToAllClients(message);
@@ -144,7 +172,7 @@ class ClientThread extends Thread {
         if (outputStreams.size() != 0) {
             for (ObjectOutputStream outputStream : outputStreams) {
                 try {
-                    System.out.println("Sending to User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessage());
+                    System.out.println("Sending to User: " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
                     outputStream.writeObject(message);
                 } catch (IOException e) {
                     e.printStackTrace();
