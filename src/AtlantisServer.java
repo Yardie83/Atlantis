@@ -13,6 +13,7 @@ public class AtlantisServer {
 
     private static final int PORT = 9000;
     private static HashMap<Long, Socket> clientThreads = new HashMap<>();
+    private static int guestNumber;
 
     public static void main(String[] args) throws IOException {
 
@@ -61,4 +62,19 @@ public class AtlantisServer {
         clientThreads.remove(threadID);
         System.out.println(clientThreads.size());
     }
+
+    private int createGuestNumber(){
+
+        guestNumber = 1;
+
+        if (clientThreads.size() != 0){
+            guestNumber = clientThreads.size() + 1;
+        }
+
+        clientThreads.size();
+
+        return guestNumber;
+    }
+
+    public int getGuestNumber(){return this.createGuestNumber();}
 }

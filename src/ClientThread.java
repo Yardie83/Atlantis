@@ -38,6 +38,7 @@ class ClientThread extends Thread {
                 System.out.println("OutputStreams: " + outputStreams.size());
 
                 sendWelcomeMessage();
+                sendGuestNumber();
                 sendGameList();
 
                 while (running) {
@@ -50,6 +51,14 @@ class ClientThread extends Thread {
             } finally {
                 System.out.println("Thread " + currentThread().getName() + " ended");
             }
+        }
+    }
+
+    private void sendGuestNumber() {
+        try {
+            sendMessage(new Message(MessageType.USERNAME, server.getGuestNumber()));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
