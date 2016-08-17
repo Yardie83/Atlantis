@@ -11,10 +11,14 @@ public class DatabaseHandler {
     private Connection cn;
     private ResultSet rs;
 
-    public DatabaseHandler(){
+    public DatabaseHandler() {
 
         System.out.println("Enter Constructor");
 
+        connectToDatabase();
+    }
+
+    private void connectToDatabase() {
         cn = null;
         stmt = null;
         rs = null;
@@ -25,17 +29,17 @@ public class DatabaseHandler {
         try {
 
             cn = DriverManager.getConnection(serverInfo, "root", "maschine1");
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (rs != null) try {
                 if (!rs.isClosed()) rs.close();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             if (stmt != null) try {
                 if (!stmt.isClosed()) stmt.close();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -47,15 +51,45 @@ public class DatabaseHandler {
         String userPassword = userNamePassword[1];
 
         try {
-            String sql = "INSERT INTO user (UserName, Password) VALUES (?, ?)";
-            PreparedStatement statement = cn.prepareStatement(sql);
-            statement.setString(1, userName);
-            statement.setString(2, userPassword);
-            statement.executeUpdate();
-            statement.close();
+
+            if (checkUserName(userName) == 0) {
+
+                String sql = "INSERT INTO user (UserName, Password) VALUES (?, ?)";
+                PreparedStatement statement = cn.prepareStatement(sql);
+                statement.setString(1, userName);
+                statement.setString(2, userPassword);
+                statement.executeUpdate();
+                statement.close();
+
+                //TODO: Positive feedback
+
+            } else {
+                //TODO: Negative feedback
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private int checkUserName(String userName) throws SQLException {
+
+        PreparedStatement preparedStatement = null;
+        rs = null;
+
+        try {
+
+            String query = "SELECT COUNT(*) FROM user WHERE userName = ?";
+            preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            preparedStatement.setString(1, userName);
+            rs = preparedStatement.executeQuery();
+            rs.next();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return rs.getInt(1);
         }
     }
 
@@ -66,7 +100,39 @@ public class DatabaseHandler {
         String userName = userNamePassword[0];
         String userPassword = userNamePassword[1];
 
-        System.out.println(userName + " " + userPassword);
+        if (checkLogin(userName, userPassword) == 1) {
+
+
+            //TODO: Do the login stuff and positive anser to the client
+        } else {
+            //TODO: Give error feedback
+
+        }
+    }
+
+    private int checkLogin(String userName, String userPassword) {
+
+        PreparedStatement preparedStatement = null;
+        rs = null;
+
+        int occurrence = 0;
+
+        try {
+
+            String query = "SELECT COUNT(*) FROM user WHERE userName = ? AND password = ?";
+            preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            preparedStatement.setString(1, userName);
+            preparedStatement.setString(2, userPassword);
+            rs = preparedStatement.executeQuery();
+            rs.next();
+
+            occurrence = rs.getInt(1);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return occurrence;
+        }
     }
 
     public void newGame(Message message) {
