@@ -14,10 +14,13 @@ public class AtlantisServer {
     private static final int PORT = 9000;
     private static HashMap<Long, Socket> clientThreads = new HashMap<>();
     private static int guestNumber;
+    private static GameHandler gameHandler;
 
     public static void main(String[] args) throws IOException {
 
         AtlantisServer server = new AtlantisServer();
+
+        gameHandler = new GameHandler();
 
         ServerSocket serverSocket = new ServerSocket(PORT);
         System.out.println("Server is running");
@@ -35,7 +38,7 @@ public class AtlantisServer {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
 
-                ClientThread chatServerThread = new ClientThread(clientSocket, server, databaseHandler);
+                ClientThread chatServerThread = new ClientThread(clientSocket, server, databaseHandler, gameHandler);
                 clientThreads.put(chatServerThread.getId(), clientSocket);
                 chatServerThread.start();
 

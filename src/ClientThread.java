@@ -16,15 +16,17 @@ class ClientThread extends Thread {
     private boolean running = true;
     private static HashSet<ObjectOutputStream> outputStreams = new HashSet<>();
     private DatabaseHandler databaseHandler;
+    private GameHandler gameHandler;
 
 
-    ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler) {
+    ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler gameHandler) {
 
         super();
 
         this.clientSocket = clientSocket;
         this.server = server;
         this.databaseHandler = databaseHandler;
+        this.gameHandler = gameHandler;
 
     }
 
@@ -95,8 +97,11 @@ class ClientThread extends Thread {
 
         //databaseHandler.getGameList();
 
+        gameHandler.getGameList();
+
         try {
-            sendMessage(new Message(MessageType.GAMELIST, "send game List Object Here"));
+            // send ArrayList (gameList) from gameHandler to the client
+            sendMessage(new Message(MessageType.GAMELIST, gameHandler.getGameList()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -121,7 +126,7 @@ class ClientThread extends Thread {
                     this.handleDisconnectUser();
                     break;
                 case NEWGAME:
-                    databaseHandler.newGame(message);
+                    this.handleNewGame(message);
                     break;
             }
         } catch (IOException e) {
@@ -131,6 +136,16 @@ class ClientThread extends Thread {
         } catch (ClassNotFoundException e) {
             System.out.println("Class \"Message\" not found");
         }
+    }
+
+    private void handleNewGame(Message message) {
+        String[] gameInformation = message.getMessageObject().toString().split(",");
+
+        String gameName = gameInformation[0];
+        int nrOfPlayers = Integer.parseInt(gameInformation[1]);
+
+        System.out.println("Game: " + gameName + " created! Number of Players: " + nrOfPlayers);
+        gameHandler.addGame(gameName, nrOfPlayers);
     }
 
     private void handleLogin(Message message) {

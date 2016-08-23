@@ -129,14 +129,6 @@ public class DatabaseHandler {
     }
 
     public void newGame(Message message) {
-
-        String[] gameInformation = message.getMessageObject().toString().split(",");
-
-        String gameName = gameInformation[0];
-        int nrOfPlayers = Integer.parseInt(gameInformation[1]);
-
-        System.out.println(gameName + " " + nrOfPlayers);
-
         //TODO: Create game instance here
     }
 }
