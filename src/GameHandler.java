@@ -13,10 +13,10 @@ import java.util.*;
 
 public class GameHandler{
 
-    private HashMap<String, Integer> gameList;
+    private LinkedHashMap<String, Integer> gameList;
 
     public GameHandler() {
-        gameList = new HashMap<>();
+        gameList = new LinkedHashMap<>();
     }
 
     public void addGame(String gameName, int players) {
@@ -27,7 +27,7 @@ public class GameHandler{
         //TODO Needs to be implemented
     }
 
-    public HashMap<String,Integer> getGameList() {
+    public LinkedHashMap<String,Integer> getGameList() {
         return gameList;
     }
 }
