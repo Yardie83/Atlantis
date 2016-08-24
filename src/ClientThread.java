@@ -3,6 +3,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -46,7 +48,6 @@ class ClientThread extends Thread {
                 while (running) {
                     receiveMessage();
                 }
-
             } catch (IOException e) {
                 System.out.println("Unable to create reader and/or writer");
                 return;
@@ -97,11 +98,10 @@ class ClientThread extends Thread {
 
         //databaseHandler.getGameList();
 
-        gameHandler.getGameList();
-
         try {
             // send ArrayList (gameList) from gameHandler to the client
-            sendMessage(new Message(MessageType.GAMELIST, gameHandler.getGameList()));
+            for (Map.Entry<String, Integer> entry : gameHandler.getGameList().entrySet())
+                sendMessage(new Message(MessageType.GAMELIST, entry.getKey() + "," + entry.getValue()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -140,19 +140,19 @@ class ClientThread extends Thread {
 
     private void handleNewGame(Message message) {
         String[] gameInformation = message.getMessageObject().toString().split(",");
-
         String gameName = gameInformation[0];
-        int nrOfPlayers = Integer.parseInt(gameInformation[1]);
-
-        System.out.println("Game: " + gameName + " created! Number of Players: " + nrOfPlayers);
+        Integer nrOfPlayers = Integer.parseInt(gameInformation[1]);
         gameHandler.addGame(gameName, nrOfPlayers);
+        for (Map.Entry<String, Integer> entry : gameHandler.getGameList().entrySet()) {
+            sendMessageToAllClients(new Message(MessageType.GAMELIST, entry.getKey() + "," + entry.getValue()));
+        }
     }
 
     private void handleLogin(Message message) {
         try {
             if (databaseHandler.userLogin(message)) {
                 sendMessage(new Message(MessageType.LOGIN, true));
-            } else if (!(databaseHandler.userLogin(message))){
+            } else if (!(databaseHandler.userLogin(message))) {
                 sendMessage(new Message(MessageType.LOGIN, false));
             }
         } catch (IOException e) {

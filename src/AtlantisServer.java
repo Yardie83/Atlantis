@@ -69,12 +69,10 @@ public class AtlantisServer {
 
     private int createGuestNumber(){
 
-        guestNumber = 1;
+        guestNumber = 0;
         if (clientThreads.size() != 0){
-            guestNumber = clientThreads.size() + 1;
+            guestNumber = clientThreads.size();
         }
-
-        clientThreads.size();
 
         return guestNumber;
     }
