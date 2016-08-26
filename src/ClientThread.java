@@ -44,6 +44,7 @@ class ClientThread extends Thread {
                 sendWelcomeMessage();
                 sendGuestNumber();
                 sendGameList();
+                sendLanguages();
 
                 while (running) {
                     receiveMessage();
@@ -83,6 +84,14 @@ class ClientThread extends Thread {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private void sendLanguages() {
+        try {
+            sendMessage(new Message(MessageType.LANGUAGELIST, server.getLanguageListfromServer()));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
