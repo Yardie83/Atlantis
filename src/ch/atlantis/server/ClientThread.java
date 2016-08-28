@@ -26,7 +26,9 @@ class ClientThread extends Thread {
     private DatabaseHandler databaseHandler;
     private GameHandler gameHandler;
     private boolean loggedIn;
-    private String guestName;
+    private String newUserName;
+    private String currentUserName;
+    private String oldUserName;
 
 
     ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler gameHandler) {
@@ -104,22 +106,24 @@ class ClientThread extends Thread {
     }
 
     private void sendUserName(String name) {
-        String userName = name;
+        newUserName = name;
         try {
             if (!loggedIn) {
-                guestName = "Guest" + server.getGuestNumber();
-                userName = guestName;
-                sendMessage(new Message(MessageType.USERNAME, guestName ));
+                newUserName = "Guest" + server.getGuestNumber();
+                currentUserName = newUserName;
+                sendMessage(new Message(MessageType.USERNAME, currentUserName));
             } else if (loggedIn){
-                sendMessage(new Message(MessageType.USERNAME, userName ));
+                oldUserName = currentUserName;
+                currentUserName = newUserName;
+                sendMessage(new Message(MessageType.USERNAME, newUserName ));
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             if (loggedIn){
-                sendMessageToAllClients(new Message(MessageType.CHAT, guestName + " is now known as: " +  userName));
+                sendMessageToAllClients(new Message(MessageType.CHAT, oldUserName + " is now known as: " +  newUserName));
             }else{
-                sendMessageToAllClients(new Message(MessageType.CHAT, "User " + userName + " entered the chat"));
+                sendMessageToAllClients(new Message(MessageType.CHAT, "User " + currentUserName + " entered the chat"));
             }
         }
     }
