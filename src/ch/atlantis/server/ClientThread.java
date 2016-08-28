@@ -164,7 +164,7 @@ class ClientThread extends Thread {
             handleDisconnectUser();
 
         } catch (ClassNotFoundException e) {
-            System.out.println("Class \"ch.atlantis.util.Message\" not found");
+            System.out.println("Class \"Message\" not found");
             e.printStackTrace();
         }
     }
