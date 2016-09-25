@@ -21,7 +21,7 @@ public class AtlantisServer {
     private static final int PORT = 9000;
     private static HashMap<Long, Socket> clientThreads = new HashMap<>();
     private static int guestNumber;
-    private static ArrayList<Language> languageList = new ArrayList<Language>();
+    private static ArrayList<Language> languageList = new ArrayList<>();
     private static GameHandler gameHandler;
 
 
@@ -42,7 +42,7 @@ public class AtlantisServer {
         LanguageHandler languageHandler = new LanguageHandler();
 
         if (languageHandler.getLanguageList().size() == 0){
-            System.out.println("no languages available");
+            System.out.println("No languages available");
         }else {
             languageList = languageHandler.getLanguageList();
         }
