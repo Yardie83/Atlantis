@@ -220,11 +220,7 @@ class ClientThread extends Thread {
     }
 
     private void handleChatMessage(Message message) throws IOException {
-        if (message.getMessageType() == MessageType.CHAT && message.getMessageObject().equals("QUIT")) {
-            handleDisconnectUser();
-        } else {
             sendMessageToAllClients(message);
-        }
     }
 
     private void handleDisconnectUser() throws IOException {
