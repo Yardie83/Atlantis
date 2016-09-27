@@ -9,11 +9,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
+ *
+ * Individual Thread for each client that connects to the server. Receives and sends messages
+ * to the clients
  */
 class ClientThread extends Thread {
 
@@ -22,7 +26,7 @@ class ClientThread extends Thread {
     private ObjectInputStream inReader;
     private ObjectOutputStream outputStream;
     private boolean running = true;
-    private static HashSet<ObjectOutputStream> outputStreams = new HashSet<>();
+    private static HashSet<ObjectOutputStream> outputStreams;
     private DatabaseHandler databaseHandler;
     private GameHandler gameHandler;
     private boolean loggedIn;
@@ -39,6 +43,7 @@ class ClientThread extends Thread {
         this.server = server;
         this.databaseHandler = databaseHandler;
         this.gameHandler = gameHandler;
+        this.outputStreams = new HashSet<>();
         loggedIn = false;
     }
 
@@ -84,11 +89,24 @@ class ClientThread extends Thread {
         System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
     }
 
-    private void sendMessageToAllClients(Message message) {
+    private void sendMessageToAllClients(MessageType messageType, String messageString) {
+
+        Message message;
+
+        // In order to ensure uniqueness of the ChatMessage we add the LocalDateTime to the message.
+        // This way a user can enter the same chat message twice in a row. The counterpart can be found
+        // in the client application in the GameLobbyController in the addListeners method.
+        // Hermann Grieder
+        if (messageType == MessageType.CHAT) {
+            String currentDateTime = LocalDateTime.now().toString();
+            message = new Message(messageType, currentDateTime + " " + messageString);
+        }else {
+            message = new Message(messageType, messageString);
+        }
         if (outputStreams.size() > 0) {
             for (ObjectOutputStream outputStream : outputStreams) {
                 try {
-                    System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
+                    System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + messageString);
                     outputStream.writeObject(message);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -112,19 +130,16 @@ class ClientThread extends Thread {
                 newUserName = "Guest" + server.getGuestNumber();
                 currentUserName = newUserName;
                 sendMessage(new Message(MessageType.USERNAME, currentUserName));
-            } else if (loggedIn){
+                sendMessageToAllClients(MessageType.CHAT, "User " + currentUserName + " entered the chat");
+
+            } else if (loggedIn) {
                 oldUserName = currentUserName;
                 currentUserName = newUserName;
-                sendMessage(new Message(MessageType.USERNAME, newUserName ));
+                sendMessage(new Message(MessageType.USERNAME, newUserName));
+                sendMessageToAllClients(MessageType.CHAT, oldUserName + " is now known as: " + newUserName);
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (loggedIn){
-                sendMessageToAllClients(new Message(MessageType.CHAT, oldUserName + " is now known as: " +  newUserName));
-            }else{
-                sendMessageToAllClients(new Message(MessageType.CHAT, "User " + currentUserName + " entered the chat"));
-            }
         }
     }
 
@@ -154,7 +169,7 @@ class ClientThread extends Thread {
                     this.handleCreateProfile(message);
                     break;
                 case CHAT:
-                    this.handleChatMessage(message);
+                    sendMessageToAllClients(MessageType.CHAT, message.getMessageObject().toString());
                     break;
                 case DISCONNECT:
                     this.handleDisconnectUser();
@@ -179,7 +194,7 @@ class ClientThread extends Thread {
         Integer nrOfPlayers = Integer.parseInt(gameInformation[1]);
         gameHandler.addGame(gameName, nrOfPlayers);
         for (Map.Entry<String, Integer> entry : gameHandler.getGameList().entrySet()) {
-            sendMessageToAllClients(new Message(MessageType.GAMELIST, entry.getKey() + "," + entry.getValue()));
+            sendMessageToAllClients(MessageType.GAMELIST, entry.getKey() + "," + entry.getValue());
         }
     }
 
@@ -219,10 +234,6 @@ class ClientThread extends Thread {
         return message.getMessageObject().toString().split(",");
     }
 
-    private void handleChatMessage(Message message) throws IOException {
-            sendMessageToAllClients(message);
-    }
-
     private void handleDisconnectUser() throws IOException {
         server.removeThread(currentThread().getId());
         outputStreams.remove(this.outputStream);
@@ -231,8 +242,7 @@ class ClientThread extends Thread {
         inReader.close();
         outputStream.close();
         clientSocket.close();
-        sendMessageToAllClients(new Message(MessageType.CHAT, "User "
-                + clientSocket.getInetAddress().getCanonicalHostName()
-                + " left the chat"));
+        sendMessageToAllClients(MessageType.CHAT, "User " + clientSocket.getInetAddress().getCanonicalHostName()
+                + " left the chat");
     }
 }
