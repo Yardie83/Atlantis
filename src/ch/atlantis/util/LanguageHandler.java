@@ -64,7 +64,7 @@ public class LanguageHandler {
         } catch (SAXException asf) {
 
         } catch (FileNotFoundException notFoundException) {
-            System.out.println("scheiss pfad");
+            System.out.println("Could not find one or more language XML Files");
 
         } catch (IOException ioException) {
 
