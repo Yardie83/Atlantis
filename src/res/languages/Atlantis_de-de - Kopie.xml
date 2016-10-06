@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<LanguageEntry Culture="de-de">
+
+<!-- GameLobbyView Controls -->
+    <String Id="btnCreateGame" >Spiel Erstellen</String>
+    <String Id="btnLogin" >Anmelden</String>
+    <String Id="btnCreateProfile" >Profil Erstellen</String>
+    <String Id="btnOptions" >Optionen</String>
+	
+    <String Id="menuFile" >Datei</String>
+    <String Id="menuOptions" >Optionen</String>
+    <String Id="menuHelp" >Hilfe</String>
+    <String Id="menuItemExit" >Beenden</String>
+    <String Id="menuItemGameRules" >Spielregeln</String>
+	
+    <String Id="lblWindowTitle" >WindowTitleDeutsch</String>
+	<String Id="lblGameTitles" >Spiele</String>
+	
+	<!-- NewProfileView Controls -->
+	<String Id="lblNewProfile" >NEUES PROFIL</String>
+	<String Id="lblUsername" >Name</String>
+	<String Id="lblPassword" >Passwort</String>
+	<String Id="lblPasswordRevision" >Passwort Bestätigung</String>
+	
+	<String Id="btnCancel" >Abbrechen</String>
+	<String Id="btnCreateProfile" >Profil erstellen</String>
+	
+	<!-- OptionsView Controls -->
+	<String Id="btnLogin" >Anmelden</String>
+	<String Id="btnLogin" >Anmelden</String>
+	<String Id="btnLogin" >Anmelden</String>
+	<String Id="btnLogin" >Anmelden</String>
+	<String Id="btnLogin" >Anmelden</String>
+	<String Id="btnLogin" >Anmelden</String>
+	<String Id="btnLogin" >Anmelden</String>
+
+</LanguageEntry>

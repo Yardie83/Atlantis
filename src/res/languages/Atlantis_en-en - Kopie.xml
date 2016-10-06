@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<LanguageEntry Culture="en-en">
+<!-- GameLobbyView Controls -->
+    <String Id="btnCreateGame" >Create Game</String>
+    <String Id="btnLogin" >Login</String>
+    <String Id="btnCreateProfile" >Create Profile</String>
+    <String Id="btnOptions" >Options</String>
+	
+    <String Id="menuFile" >File</String>
+    <String Id="menuOptions" >Options</String>
+    <String Id="menuHelp" >Help</String>
+    <String Id="menuItemExit" >Exit</String>
+    <String Id="menuItemGameRules" >Game Rules</String>
+	
+    <String Id="lblWindowTitle" >WindowTitleEnglish</String>
+	<String Id="lblGameTitles" >Games</String>
+	
+	<!-- NewProfileView Controls -->
+	<String Id="lblNewProfile" >NEW PROFILE</String>
+	<String Id="lblUsername" >Name</String>
+	<String Id="lblPassword" >Password</String>
+	<String Id="lblPasswordRevision" >Re -Type Password</String>
+	
+	<String Id="btnCancel" >Cancel</String>
+	<String Id="btnCreateProfile" >Create Profile</String>
+</LanguageEntry>
