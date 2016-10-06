@@ -27,7 +27,7 @@ public class DatabaseHandler {
         rs = null;
 
         String serverInfo = "jdbc:mysql://" + "localhost" + ":" + "3306" + "/atlantisdb";
-        String optionInfo = "?connectTimeout=5000";
+        //String optionInfo = "?connectTimeout=5000";
         System.out.println(("Opening connection to " + serverInfo + "\n"));
         try {
 
@@ -63,7 +63,7 @@ public class DatabaseHandler {
 
                 System.out.println("Success");
 
-                String sql = "INSERT INTO user (UserName, Password) VALUES (?, ?)";
+                String sql = "INSERT INTO tbl_user (UserName, Password) VALUES (?, ?)";
                 PreparedStatement statement = cn.prepareStatement(sql);
                 statement.setString(1, userName);
                 statement.setString(2, userPassword);
@@ -112,7 +112,7 @@ public class DatabaseHandler {
         PreparedStatement preparedStatement = null;
         rs = null;
 
-        String query = "SELECT COUNT(*) FROM user WHERE userName = ?";
+        String query = "SELECT COUNT(*) FROM tbl_user WHERE userName = ?";
 
         if (message.getMessageType() == MessageType.CREATEPROFILE) {
 
@@ -121,7 +121,7 @@ public class DatabaseHandler {
 
         } else if (message.getMessageType() == MessageType.LOGIN) {
 
-            query = "SELECT COUNT(*) FROM user WHERE userName = ? AND password = ?";
+            query = "SELECT COUNT(*) FROM tbl_user WHERE userName = ? AND password = ?";
             preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setString(1, userName);
             preparedStatement.setString(2, userPassword);
@@ -131,6 +131,13 @@ public class DatabaseHandler {
         rs.next();
 
         return rs.getInt(1);
+    }
+
+    public void enterGameTime(long gameTime, String userName) {
+
+        String s = userName;
+
+
     }
 
     public void newGame(Message message) {

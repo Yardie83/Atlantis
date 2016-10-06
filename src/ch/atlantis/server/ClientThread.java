@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Timer;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -29,7 +30,7 @@ class ClientThread extends Thread {
     private String newUserName;
     private String currentUserName;
     private String oldUserName;
-
+    private long gameTime;
 
     ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler gameHandler) {
 
@@ -188,6 +189,12 @@ class ClientThread extends Thread {
         String userName = credentials[0];
         try {
             if (databaseHandler.userLogin(message)) {
+
+                //Start Timer
+                gameTime = System.currentTimeMillis();
+
+
+
                 loggedIn = true;
                 sendMessage(new Message(MessageType.LOGIN, true));
                 sendUserName(userName);
@@ -229,6 +236,12 @@ class ClientThread extends Thread {
 
     private void handleDisconnectUser() throws IOException {
         server.removeThread(currentThread().getId());
+
+        //End Timer
+        gameTime = System.currentTimeMillis() - gameTime;
+
+        databaseHandler.enterGameTime(gameTime, currentUserName);
+
         outputStreams.remove(this.outputStream);
         running = false;
         this.interrupt();

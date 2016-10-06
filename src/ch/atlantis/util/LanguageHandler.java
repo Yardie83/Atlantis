@@ -5,6 +5,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -26,16 +27,16 @@ public class LanguageHandler {
         getFiles();
     }
 
-    private void getFiles(){
+    private void getFiles() {
 
         String[] files = new String[2];
 
-        files[0] = "src/res/Atlantis_de-de.xml";
-        files[1] = "src/res/Atlantis_en-en.xml";
+        files[0] = "src/res/languages/Atlantis_en-en - Kopie.xml";
+        files[1] = "src/res/languages/Atlantis_de-de - Kopie.xml";
 
-        if (files != null || files.length != 0){
+        if (files != null || files.length != 0) {
 
-            for (String file : files){
+            for (String file : files) {
                 readLanguageFile(file);
             }
         }
@@ -54,9 +55,6 @@ public class LanguageHandler {
             Document doc = dBuilder.parse(xmlLanguageFile);
 
             culture = doc.getDocumentElement().getAttribute("Culture");
-
-//            NodeList nodes = doc.getElementsByTagName("String");
-//            Element element = doc.getDocumentElement();
 
             this.languageList.add(new Language(culture, getFileValues(doc)));
 
@@ -83,16 +81,24 @@ public class LanguageHandler {
 
         Hashtable<String, String> values = new Hashtable<String, String>();
 
-        for (int i = 0; i <= nodes.getLength()-1; i++) {
+        for (int i = 0; i <= nodes.getLength() - 1; i++) {
 
             String id = nodes.item(i).getAttributes().getNamedItem("Id").toString();
             String value = element.getElementsByTagName("String").item(i).getChildNodes().item(0).getNodeValue();
 
-            values.put(id, value);
+            values.put(modifyValue(id), value);
         }
 
         return values;
     }
 
-    public ArrayList<Language> getLanguageList(){return this.languageList;}
+    private String modifyValue(String id) {
+
+        String[] split = id.split("\"");
+        return split[1];
+    }
+
+    public ArrayList<Language> getLanguageList() {
+        return this.languageList;
+    }
 }
