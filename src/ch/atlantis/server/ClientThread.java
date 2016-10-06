@@ -4,7 +4,6 @@ import ch.atlantis.database.DatabaseHandler;
 import ch.atlantis.game.GameHandler;
 import ch.atlantis.util.Message;
 import ch.atlantis.util.MessageType;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -15,9 +14,9 @@ import java.util.Map;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
- *
- * Individual Thread for each client that connects to the server. Receives and sends messages
- * to the clients
+ * <p>
+ * Individual Thread for each client that connects to the server.
+ * Receives and sends messages to the clients
  */
 class ClientThread extends Thread {
 
@@ -30,9 +29,7 @@ class ClientThread extends Thread {
     private DatabaseHandler databaseHandler;
     private GameHandler gameHandler;
     private boolean loggedIn;
-    private String newUserName;
     private String currentUserName;
-    private String oldUserName;
 
 
     ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler gameHandler) {
@@ -43,7 +40,7 @@ class ClientThread extends Thread {
         this.server = server;
         this.databaseHandler = databaseHandler;
         this.gameHandler = gameHandler;
-        this.outputStreams = new HashSet<>();
+        outputStreams = new HashSet<>();
         loggedIn = false;
     }
 
@@ -84,7 +81,7 @@ class ClientThread extends Thread {
                 + "\n*****************************************"));
     }
 
-    public void sendMessage(Message message) throws IOException {
+    private void sendMessage(Message message) throws IOException {
         outputStream.writeObject(message);
         System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message.getMessageObject());
     }
@@ -98,9 +95,9 @@ class ClientThread extends Thread {
         // in the client application in the GameLobbyController in the addListeners method.
         // Hermann Grieder
         if (messageType == MessageType.CHAT) {
-            String currentDateTime = LocalDateTime.now().toString();
-            message = new Message(messageType, currentDateTime + " " + messageString);
-        }else {
+            messageString = LocalDateTime.now().toString() + " " + messageString;
+            message = new Message(messageType, messageString);
+        } else {
             message = new Message(messageType, messageString);
         }
         if (outputStreams.size() > 0) {
@@ -124,7 +121,7 @@ class ClientThread extends Thread {
     }
 
     private void sendUserName(String name) {
-        newUserName = name;
+        String newUserName = name;
         try {
             if (!loggedIn) {
                 newUserName = "Guest" + server.getGuestNumber();
@@ -132,8 +129,8 @@ class ClientThread extends Thread {
                 sendMessage(new Message(MessageType.USERNAME, currentUserName));
                 sendMessageToAllClients(MessageType.CHAT, "User " + currentUserName + " entered the chat");
 
-            } else if (loggedIn) {
-                oldUserName = currentUserName;
+            } else {
+                String oldUserName = currentUserName;
                 currentUserName = newUserName;
                 sendMessage(new Message(MessageType.USERNAME, newUserName));
                 sendMessageToAllClients(MessageType.CHAT, oldUserName + " is now known as: " + newUserName);
