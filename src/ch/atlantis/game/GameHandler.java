@@ -1,35 +1,52 @@
 package ch.atlantis.game;
 
-import javafx.beans.InvalidationListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-
-import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
- * Created by Can Heval Cokyasar on 23.08.16.
+ * Created by Hermann Grieder on 23.08.16.
+ * <p>
+ * Handles all game related functions, like adding players to a game, adding created games
+ * to a gameList. Also creates a new game instance.
  */
 
-public class GameHandler{
+public class GameHandler {
+    private ArrayList<Game> games;
 
-    private LinkedHashMap<String, Integer> gameList;
+
 
     public GameHandler() {
-        gameList = new LinkedHashMap<>();
+        games = new ArrayList<>();
+
     }
 
-    public void addGame(String gameName, int players) {
-        gameList.put(gameName, players);
+    public void addGame( Game game ) {
+        game.getPlayers().get( 0 ).setPlayerId( 0 );
+        games.add( game );
     }
 
-    public void removeGame(){
-        //TODO Needs to be implemented
+    public void removeGame( String gameName ) {
+        for ( Game g : games ) {
+            if ( g.getGameName().equals( gameName ) ) {
+                games.remove( g );
+            }
+        }
     }
 
-    public LinkedHashMap<String,Integer> getGameList() {
-        return gameList;
+    public ArrayList<Game> getGames(){
+        return games;
+    }
+
+    public boolean addPlayer( String gameName, String playerName ) {
+        for ( Game g : games ) {
+            if ( g.getGameName().equals( gameName ) && g.getPlayers().size() < g.getNumberOfPlayers() ) {
+                Player p = new Player( playerName );
+                p.setPlayerId( g.getPlayers().size()+1 );
+                p.setPlayerColor( p.getPlayerID() );
+                g.getPlayers().add( p );
+                return true;
+            }
+        }
+        return false;
     }
 }

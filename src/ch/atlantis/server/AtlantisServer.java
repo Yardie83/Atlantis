@@ -53,7 +53,6 @@ public class AtlantisServer {
             printUserCount();
 
             try {
-
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
 
@@ -88,7 +87,7 @@ public class AtlantisServer {
     private int createGuestNumber() {
 
         int guestNumber = 0;
-        if (clientThreads.size() != 0) {
+        if (clientThreads.size() > 0) {
             guestNumber = clientThreads.size();
         }
 

@@ -61,7 +61,7 @@ public class DatabaseHandler {
 
             if (checkUserEntries(userName, userPassword, message) == 0) {
 
-                System.out.println("Success");
+                System.out.println("Success creating profile");
 
                 String sql = "INSERT INTO tbl_user (UserName, Password) VALUES (?, ?)";
                 PreparedStatement statement = cn.prepareStatement(sql);
@@ -73,7 +73,7 @@ public class DatabaseHandler {
                 isSuccess = true;
             } else {
 
-                System.out.println("not success");
+                System.out.println("No success creating the user profile");
 
                 isSuccess = false;
             }
