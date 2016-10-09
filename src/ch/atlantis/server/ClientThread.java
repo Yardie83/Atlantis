@@ -132,7 +132,7 @@ class ClientThread extends Thread {
                         messageString );
                 outputStream.writeObject( message );
             } catch ( IOException e ) {
-                e.printStackTrace();
+                System.out.println( "Could not write to " + clientSocket.getRemoteSocketAddress() );
             }
         }
     }
@@ -183,9 +183,23 @@ class ClientThread extends Thread {
      * Hermann Grieder
      */
     private void sendGameList() {
-
+        // Check for empty games and remove them from the list
+        if ( gameHandler.getGames() != null ) {
+            Game gameToRemove = null;
+            for ( Game g : gameHandler.getGames() ) {
+                if ( g.getPlayers().size() == 0 ) {
+                    System.out.println("Players in Game: " + g.getPlayers().size());
+                    gameToRemove = g;
+                }
+            }
+            if ( gameToRemove != null ) {
+                gameHandler.getGames().remove( gameToRemove );
+            }
+        }
+        // Todo: (loris) databaseHandler getGameList....need to talk about what to do with this.
         //databaseHandler.getGameList();
 
+        // Send each game from the Games array in the gameHandler class to all the clients
         if ( gameHandler.getGames().size() > 0 ) {
             for ( Game g : gameHandler.getGames() ) {
                 String nameOfGame = g.getGameName();
@@ -233,7 +247,7 @@ class ClientThread extends Thread {
             }
         } catch ( IOException e ) {
             System.out.println( "User disconnected" );
-            handleDisconnectUser(currentPlayerName);
+            handleDisconnectUser( currentPlayerName );
 
         } catch ( ClassNotFoundException e ) {
             System.out.println( "Class \"Message\" not found" );
@@ -259,12 +273,11 @@ class ClientThread extends Thread {
 
         // Create and add a new game to the games ArrayList in
         // the GameHandler with the above game information
-        gameHandler.addGame( new Game( gameName, nrOfPlayers, new Player( currentPlayerName ) ) );
+        gameHandler.addGame( gameName, nrOfPlayers );
+        gameHandler.addPlayer( gameName, currentPlayerName );
 
-        // Send the newly created game to all clients, so they can display it in their List
-        if ( gameHandler.getGames() != null ) {
-            sendGameList();
-        }
+        // Send the newly created game to all clients
+        sendGameList();
     }
 
     /**
@@ -310,15 +323,12 @@ class ClientThread extends Thread {
     }
 
     private void handleJoinGame( Message message ) {
+
         String gameName = message.getMessageObject().toString();
-        if (gameHandler.addPlayer(gameName, currentPlayerName )){
-            try {
-                sendMessage( new Message( MessageType.JOINGAME, true ) );
-                sendGameList();
-            } catch ( IOException e ) {
-                e.printStackTrace();
-            }
-        }
+        // Add the player to the game selected
+        gameHandler.addPlayer( gameName, currentPlayerName );
+        // Send the updated gameList to everyone
+        sendGameList();
     }
 
     /**
@@ -332,8 +342,8 @@ class ClientThread extends Thread {
     }
 
     /**
-     * @throws IOException
      * @param currentPlayerName Current name of the player
+     * @throws IOException
      */
     private void handleDisconnectUser( String currentPlayerName ) throws IOException {
         server.removeThread( currentThread().getId() );

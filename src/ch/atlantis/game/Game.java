@@ -13,11 +13,10 @@ public class Game {
     private ArrayList<Player> players;
     private int numberOfPlayers;
 
-    public Game( String gameName, int numberOfPlayers, Player player ) {
+    public Game( String gameName, int numberOfPlayers) {
         this.gameName = gameName;
         this.numberOfPlayers = numberOfPlayers;
-        players = new ArrayList<>();
-        players.add( player );
+        this.players = new ArrayList<>();
     }
 
     public void addPlayer(Player player){

@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 
 public class GameHandler {
     private ArrayList<Game> games;
-
+    private int playerId;
 
 
     public GameHandler() {
@@ -20,33 +20,57 @@ public class GameHandler {
 
     }
 
-    public void addGame( Game game ) {
-        game.getPlayers().get( 0 ).setPlayerId( 0 );
+    public void addGame( String gameName, Integer nrOfPlayers ) {
+        playerId = 0;
+        // If the game already exists, do nothing
+        for ( Game g : games ) {
+            if ( g.getGameName().equals( gameName ) ) {
+                return;
+            }
+        }
+
+        // If the game does not exist, create it and add it to the list of games
+        Game game = new Game( gameName, nrOfPlayers );
         games.add( game );
     }
 
-    public void removeGame( String gameName ) {
-        for ( Game g : games ) {
-            if ( g.getGameName().equals( gameName ) ) {
-                games.remove( g );
-            }
-        }
-    }
-
-    public ArrayList<Game> getGames(){
+    public ArrayList<Game> getGames() {
         return games;
     }
 
-    public boolean addPlayer( String gameName, String playerName ) {
+    public void addPlayer( String gameName, String playerName ) {
+        Player playerToRemove = null;
+        Game gameToRemovePlayerFrom = null;
+        Game gameToAddPlayerTo = null;
+
+        //Find the Game to which we want to add the player to.
         for ( Game g : games ) {
+            for ( Player p : g.getPlayers() ) {
+                // Check if the player tried to join the same game twice
+                if ( p.getPlayerName().equals( playerName ) && g.getGameName().equals( gameName ) ) {
+                    return;
+                }
+                // Check if the player has already joined another game, if so remove the player form that game
+                if ( p.getPlayerName().equals( playerName ) && !( g.getGameName().equals( gameName ) ) ) {
+                    playerToRemove = p;
+                    gameToRemovePlayerFrom = g;
+                }
+            }
+            // If none of the above applies and the game is not full, then this is the game we wanted to find.
             if ( g.getGameName().equals( gameName ) && g.getPlayers().size() < g.getNumberOfPlayers() ) {
-                Player p = new Player( playerName );
-                p.setPlayerId( g.getPlayers().size()+1 );
-                p.setPlayerColor( p.getPlayerID() );
-                g.getPlayers().add( p );
-                return true;
+                gameToAddPlayerTo = g;
             }
         }
-        return false;
+        //Remove the player from the other game
+        if(playerToRemove != null){
+            gameToRemovePlayerFrom.removePlayer( playerToRemove );
+        }
+        // If we found a game to add the player to, then create a new player and add the player to that game.
+        if ( gameToAddPlayerTo != null ) {
+            Player player = new Player( playerName );
+            player.setPlayerId( playerId++ );
+            player.setPlayerColor( player.getPlayerID() );
+            gameToAddPlayerTo.addPlayer( player );
+        }
     }
 }
