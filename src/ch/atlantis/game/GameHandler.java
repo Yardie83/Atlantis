@@ -1,7 +1,9 @@
 package ch.atlantis.game;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import ch.atlantis.util.Message;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * Created by Hermann Grieder on 23.08.16.
@@ -11,47 +13,80 @@ import java.util.LinkedHashMap;
  */
 
 public class GameHandler {
-    private ArrayList<Game> games;
+    private HashMap<String, Game> games;
     private int playerId;
 
 
     public GameHandler() {
-        games = new ArrayList<>();
-
+        games = new HashMap<>();
     }
 
-    public void addGame( String gameName, Integer nrOfPlayers ) {
+    /**
+     * Extracts the information from the message. Creates a new game and
+     * adds it to the gameHandler. Then adds the Player who sent the message
+     * as the first player (with the playerId = 0) to the game
+     * <p>
+     * Hermann Grieder
+     *
+     * @param message Message received from the client
+     */
+    public boolean handleNewGame( Message message, String currentPlayerName) throws IOException {
+
+        // Extract the information from the message
+        String[] gameInformation = message.getMessageObject().toString().split( "," );
+        String gameName = gameInformation[ 0 ];
+        Integer nrOfPlayers = Integer.parseInt( gameInformation[ 1 ] );
+
+        // Create and add a new game to the games ArrayList in
+        // the GameHandler with the above game information
+        if ( addGame( gameName, nrOfPlayers ) ) {
+            System.out.println("Game: " + gameName + " added");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean addGame( String gameName, Integer nrOfPlayers ) {
         playerId = 0;
         // If the game already exists, do nothing
-        for ( Game g : games ) {
-            if ( g.getGameName().equals( gameName ) ) {
-                return;
-            }
+        if ( games.containsKey( gameName ) ) {
+            return false;
+        } else {
+            // If the game does not exist, create it and add it to the list of games
+            Game game = new Game( gameName, nrOfPlayers );
+            games.put( gameName, game );
+            return true;
         }
-
-        // If the game does not exist, create it and add it to the list of games
-        Game game = new Game( gameName, nrOfPlayers );
-        games.add( game );
     }
 
-    public ArrayList<Game> getGames() {
-        return games;
+    public boolean isGameFull( String gameName ) {
+        Game g = games.get( gameName );
+        if ( g.getPlayers().size() == g.getNumberOfPlayers() ) {
+            g.setReady( true );
+            //initGame( g );
+            return g.isReady();
+        }
+        return false;
     }
 
-    public void addPlayer( String gameName, String playerName ) {
+    public Player addPlayer( String gameName, String currentPlayerName) {
+        System.out.println("Adding Player: " + currentPlayerName);
+        Player player = new Player( currentPlayerName);
+
         Player playerToRemove = null;
         Game gameToRemovePlayerFrom = null;
         Game gameToAddPlayerTo = null;
 
-        //Find the Game to which we want to add the player to.
-        for ( Game g : games ) {
+        // Before adding the player we have to check various things first
+        for ( HashMap.Entry<String, Game> entry : games.entrySet() ) {
+            Game g = entry.getValue();
             for ( Player p : g.getPlayers() ) {
                 // Check if the player tried to join the same game twice
-                if ( p.getPlayerName().equals( playerName ) && g.getGameName().equals( gameName ) ) {
-                    return;
+                if ( p.getPlayerName().equals( currentPlayerName ) && g.getGameName().equals( gameName ) ) {
+                    return null;
                 }
                 // Check if the player has already joined another game, if so remove the player form that game
-                if ( p.getPlayerName().equals( playerName ) && !( g.getGameName().equals( gameName ) ) ) {
+                if ( p.getPlayerName().equals( currentPlayerName ) && !( g.getGameName().equals( gameName ) ) ) {
                     playerToRemove = p;
                     gameToRemovePlayerFrom = g;
                 }
@@ -62,15 +97,35 @@ public class GameHandler {
             }
         }
         //Remove the player from the other game
-        if(playerToRemove != null){
+        if ( playerToRemove != null ) {
             gameToRemovePlayerFrom.removePlayer( playerToRemove );
         }
+        //Now that we checked everything, we can add the player to the game
+        //
         // If we found a game to add the player to, then create a new player and add the player to that game.
         if ( gameToAddPlayerTo != null ) {
-            Player player = new Player( playerName );
+            System.out.println("Player with ID: " + playerId + " added");
             player.setPlayerId( playerId++ );
+
             player.setPlayerColor( player.getPlayerID() );
             gameToAddPlayerTo.addPlayer( player );
+            return player;
         }
+        return null;
+    }
+
+    public HashMap<String, Game> getGames() {
+        return games;
+    }
+
+
+    // Finish initializing the game
+    public void initGame( Game game ) {
+
+    }
+
+    // Start the game, once Player 0 hits the start game button in the client
+    public void startGame( String gameName ) {
+
     }
 }

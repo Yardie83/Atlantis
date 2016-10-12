@@ -12,9 +12,12 @@ public class Game {
     private String gameName;
     private ArrayList<Player> players;
     private int numberOfPlayers;
+    private boolean isReady;
 
     public Game( String gameName, int numberOfPlayers) {
+
         this.gameName = gameName;
+        this.isReady = false;
         this.numberOfPlayers = numberOfPlayers;
         this.players = new ArrayList<>();
     }
@@ -37,5 +40,13 @@ public class Game {
 
     public int getNumberOfPlayers(){
         return numberOfPlayers;
+    }
+
+    public boolean isReady() {
+        return isReady;
+    }
+
+    public void setReady( boolean ready ) {
+        isReady = ready;
     }
 }

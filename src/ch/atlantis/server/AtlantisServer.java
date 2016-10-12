@@ -40,11 +40,12 @@ public class AtlantisServer {
 
             try {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Connection accepted: " + clientSocket.getInetAddress().getCanonicalHostName());
+                System.out.println("Connection accepted: " + clientSocket.getRemoteSocketAddress());
 
-                ClientThread chatServerThread = new ClientThread(clientSocket, server, databaseHandler, gameHandler);
-                clientThreads.put(chatServerThread.getId(), clientSocket);
-                chatServerThread.start();
+                ClientThread clientThread = new ClientThread(clientSocket, server, databaseHandler, gameHandler);
+                clientThreads.put(clientThread.getId(), clientSocket);
+                System.out.println("Starting Thread: " + clientThread.getId());
+                clientThread.start();
 
             } catch (IOException e) {
                 System.out.println("Server was unable to accept user connection");

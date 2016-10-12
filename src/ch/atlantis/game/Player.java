@@ -2,6 +2,8 @@ package ch.atlantis.game;
 
 import javafx.scene.paint.Color;
 
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -18,18 +20,15 @@ public class Player {
     private ArrayList<Card> movementCards;
     private Card bridge;
 
-    public Player(String playerName) {
+    public Player( String playerName ) {
         this.playerName = playerName;
         this.pathCards = new ArrayList<>();
         this.movementCards = new ArrayList<>();
         this.gamePieces = new ArrayList<>(4);
+        this.playerID = -1;
     }
 
     public String getPlayerName() { return playerName; }
-
-    public Color getPlayerColor() {
-        return playerColor;
-    }
 
     public void setPlayerColor(int color){
         switch (color){
@@ -46,7 +45,10 @@ public class Player {
                 playerColor = Color.YELLOW;
                 break;
         }
+    }
 
+    public Color getPlayerColor() {
+        return playerColor;
     }
 
     public void addScore(int score){
@@ -97,7 +99,7 @@ public class Player {
         return gamePieces;
     }
 
-    public void setPlayerId(int playerID){
+    public void setPlayerId( int playerID){
         this.playerID = playerID;
     }
 
