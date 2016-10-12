@@ -12,7 +12,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -28,7 +29,7 @@ class ClientThread extends Thread {
     private ObjectInputStream inReader;
     private ObjectOutputStream outputStream;
     private boolean running;
-    private static HashSet<ObjectOutputStream> outputStreams = new HashSet<>();
+    private static Map<Socket, ObjectOutputStream> outputStreams = new HashMap<>();
     private DatabaseHandler databaseHandler;
     private GameHandler gameHandler;
     private boolean loggedIn;
@@ -53,7 +54,7 @@ class ClientThread extends Thread {
             try {
                 this.inReader = new ObjectInputStream( clientSocket.getInputStream() );
                 this.outputStream = new ObjectOutputStream( clientSocket.getOutputStream() );
-                outputStreams.add( outputStream );
+                outputStreams.put( clientSocket, outputStream );
                 System.out.println( "OutputStreams: " + outputStreams.size() );
 
                 sendWelcomeMessage();
@@ -92,7 +93,7 @@ class ClientThread extends Thread {
      * @param message Message Object to be sent
      * @throws IOException Throws IOException
      */
-    private void sendMessage( Message message ) throws IOException {
+    public void sendMessage( Message message ) throws IOException {
         outputStream.writeObject( message );
         System.out.println( "Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message
                 .getMessageObject() );
@@ -107,7 +108,7 @@ class ClientThread extends Thread {
      * @param messageType   Type of message
      * @param messageString The actual message to be sent
      */
-    private void sendMessageToAllClients( MessageType messageType, String messageString ) {
+    public void sendMessageToAllClients( MessageType messageType, String messageString ) {
 
         // If there are no users connected anymore, don't do anything
 
@@ -126,22 +127,28 @@ class ClientThread extends Thread {
             messageString = LocalDateTime.now().toString() + " " + messageString;
             message = new Message( messageType, messageString );
         }
-        for ( ObjectOutputStream outputStream : outputStreams ) {
-            try {
-                System.out.println( "Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " +
-                        messageString );
-                outputStream.writeObject( message );
-            } catch ( IOException e ) {
-                System.out.println( "Could not write to " + clientSocket.getRemoteSocketAddress() );
+
+        for ( HashMap.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet() ) {
+            Socket clientSocket = entry.getKey();
+            ObjectOutputStream outputStream = entry.getValue();
+            {
+                try {
+                    System.out.println( "Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " +
+                            messageString );
+                    outputStream.writeObject( message );
+                } catch ( IOException e ) {
+                    System.out.println( "Could not write to " + clientSocket.getRemoteSocketAddress() );
+                }
             }
         }
     }
 
-    /**
-     * Sends the list of languages to the client
-     * <p>
-     * Loris Grether
-     */
+        /**
+         * Sends the list of languages to the client
+         * <p>
+         * Loris Grether
+         */
+
     private void sendLanguages() {
         try {
             sendMessage( new Message( MessageType.LANGUAGELIST, server.getLanguageListFromServer() ) );
@@ -185,11 +192,12 @@ class ClientThread extends Thread {
     private void sendGameList() {
         // Check for empty games and remove them from the list
         if ( gameHandler.getGames() != null ) {
-            Game gameToRemove = null;
-            for ( Game g : gameHandler.getGames() ) {
+            String gameToRemove = null;
+            for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
+                Game g = entry.getValue();
                 if ( g.getPlayers().size() == 0 ) {
-                    System.out.println("Players in Game: " + g.getPlayers().size());
-                    gameToRemove = g;
+                    System.out.println( "Players in Game: " + g.getGameName() + " : " + g.getPlayers().size() );
+                    gameToRemove = g.getGameName();
                 }
             }
             if ( gameToRemove != null ) {
@@ -201,7 +209,8 @@ class ClientThread extends Thread {
 
         // Send each game from the Games array in the gameHandler class to all the clients
         if ( gameHandler.getGames().size() > 0 ) {
-            for ( Game g : gameHandler.getGames() ) {
+            for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
+                Game g = entry.getValue();
                 String nameOfGame = g.getGameName();
                 int numberOfPlayers = g.getNumberOfPlayers();
                 int currentJoinedUsers = g.getPlayers().size();
@@ -239,7 +248,7 @@ class ClientThread extends Thread {
                     this.handleDisconnectUser( currentPlayerName );
                     break;
                 case NEWGAME:
-                    this.handleNewGame( message );
+                    this.handleNewGame(message);
                     break;
                 case JOINGAME:
                     this.handleJoinGame( message );
@@ -255,29 +264,28 @@ class ClientThread extends Thread {
         }
     }
 
-    /**
-     * Extracts the information from the message. Creates a new game and
-     * adds it to the gameHandler. Informs all the clients about this
-     * newly created game.
-     * <p>
-     * Hermann Grieder
-     *
-     * @param message Message received from the client
-     */
-    private void handleNewGame( Message message ) {
+    private void handleNewGame( Message message ) throws IOException {
+        if (gameHandler.handleNewGame( message, currentPlayerName )) {
+            handleJoinGame( message );
+        }
+    }
 
+    private void handleJoinGame( Message message ) throws IOException {
         // Extract the information from the message
-        String[] gameInformation = splitMessage( message );
+        String[] gameInformation = message.getMessageObject().toString().split( "," );
         String gameName = gameInformation[ 0 ];
-        Integer nrOfPlayers = Integer.parseInt( gameInformation[ 1 ] );
 
-        // Create and add a new game to the games ArrayList in
-        // the GameHandler with the above game information
-        gameHandler.addGame( gameName, nrOfPlayers );
-        gameHandler.addPlayer( gameName, currentPlayerName );
-
-        // Send the newly created game to all clients
+        Player player = gameHandler.addPlayer( gameName, currentPlayerName );
+        if ( player != null ) {
+            sendMessage( new Message( MessageType.JOINGAME, player.getPlayerID() + "," + gameName ) );
+        }
         sendGameList();
+
+        for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
+            Game g = entry.getValue();
+            Boolean gameIsReady = gameHandler.isGameFull( gameName );
+                sendMessageToAllClients( MessageType.GAMEREADY, gameName + "," + gameIsReady.toString() );
+        }
     }
 
     /**
@@ -322,14 +330,6 @@ class ClientThread extends Thread {
         }
     }
 
-    private void handleJoinGame( Message message ) {
-
-        String gameName = message.getMessageObject().toString();
-        // Add the player to the game selected
-        gameHandler.addPlayer( gameName, currentPlayerName );
-        // Send the updated gameList to everyone
-        sendGameList();
-    }
 
     /**
      * Splits a message at the "," sign.
@@ -343,7 +343,7 @@ class ClientThread extends Thread {
 
     /**
      * @param currentPlayerName Current name of the player
-     * @throws IOException
+     * @throws IOException If if was not possible to close all resources
      */
     private void handleDisconnectUser( String currentPlayerName ) throws IOException {
         server.removeThread( currentThread().getId() );
