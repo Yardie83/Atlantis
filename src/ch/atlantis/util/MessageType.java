@@ -17,6 +17,5 @@ public enum MessageType {
     SUCCESSFUL,
     UNSUCCESSFUL,
     USERNAME,
-    LANGUAGELIST,
     JOINGAME
 }

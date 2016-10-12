@@ -2,13 +2,10 @@ package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
 import ch.atlantis.game.GameHandler;
-import ch.atlantis.util.Language;
-import ch.atlantis.util.LanguageHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -23,8 +20,6 @@ public class AtlantisServer {
 
     private static final int PORT = 9000;
     private static HashMap<Long, Socket> clientThreads = new HashMap<>();
-    private static ArrayList<Language> languageList = new ArrayList<>();
-
 
     public static void main(String[] args) throws IOException {
 
@@ -38,15 +33,6 @@ public class AtlantisServer {
 
         //Create Database connection
         DatabaseHandler databaseHandler = new DatabaseHandler();
-
-        //Handles all languages from the program
-        LanguageHandler languageHandler = new LanguageHandler();
-
-        if (languageHandler.getLanguageList().size() == 0) {
-            System.out.println("No languages available");
-        } else {
-            languageList = languageHandler.getLanguageList();
-        }
 
         while (true) {
 
@@ -96,9 +82,5 @@ public class AtlantisServer {
 
     public int getGuestNumber() {
         return this.createGuestNumber();
-    }
-
-    public ArrayList<Language> getLanguageListFromServer() {
-        return languageList;
     }
 }

@@ -59,7 +59,6 @@ class ClientThread extends Thread {
                 sendWelcomeMessage();
                 sendPlayerName( null );
                 sendGameList();
-                sendLanguages();
 
                 while ( running ) {
                     receiveMessage();
@@ -134,19 +133,6 @@ class ClientThread extends Thread {
             } catch ( IOException e ) {
                 System.out.println( "Could not write to " + clientSocket.getRemoteSocketAddress() );
             }
-        }
-    }
-
-    /**
-     * Sends the list of languages to the client
-     * <p>
-     * Loris Grether
-     */
-    private void sendLanguages() {
-        try {
-            sendMessage( new Message( MessageType.LANGUAGELIST, server.getLanguageListFromServer() ) );
-        } catch ( IOException e ) {
-            e.printStackTrace();
         }
     }
 
