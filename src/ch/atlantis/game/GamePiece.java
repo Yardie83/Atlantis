@@ -6,3 +6,4 @@ package ch.atlantis.game;
  */
 public class GamePiece {
 }
+

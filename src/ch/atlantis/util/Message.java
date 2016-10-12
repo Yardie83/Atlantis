@@ -36,3 +36,4 @@ public class Message implements Serializable{
         this.messageType = messageType;
     }
 }
+
