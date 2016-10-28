@@ -1,6 +1,7 @@
 package ch.atlantis.game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Hermann Grieder on 07.10.2016.
@@ -24,8 +25,8 @@ public class Game {
     }
 
 
-    public void init() {
-        model.init();
+    public HashMap<String, ArrayList> init() {
+        return model.init();
     }
 
 

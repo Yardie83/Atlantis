@@ -3,6 +3,7 @@ package ch.atlantis.game;
 import ch.atlantis.util.Message;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -119,8 +120,9 @@ public class GameHandler {
 
 
     // Finish initializing the game
-    public void initGame(Player hostPlayer) {
+    public HashMap<String, ArrayList> initGame(Player hostPlayer) {
         Game game = games.get( hostPlayer.getGameName() );
-        game.init();
+        return game.init();
+
     }
 }

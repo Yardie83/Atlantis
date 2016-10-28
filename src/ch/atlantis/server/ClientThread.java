@@ -29,6 +29,7 @@ class ClientThread extends Thread {
     private ObjectInputStream inReader;
     private ObjectOutputStream outputStream;
     private boolean running;
+    private static HashMap<Player, Socket> playerSockets = new HashMap<>();
     private static Map<Socket, ObjectOutputStream> outputStreams = new HashMap<>();
     private DatabaseHandler databaseHandler;
     private GameHandler gameHandler;
@@ -252,8 +253,14 @@ class ClientThread extends Thread {
         }
     }
 
-    private void initGame( Player hostPlayer ) {
+    private void initGame( Player hostPlayer ) throws  IOException {
         gameHandler.initGame( hostPlayer );
+        Game game = gameHandler.getGames().get(hostPlayer.getGameName());
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            Socket socket = playerSockets.get(player);
+            ObjectOutputStream obOutStream = outputStreams.get(socket);
+            obOutStream.writeObject(gameHandler.initGame(hostPlayer));
+        }
     }
 
     private void handleNewGame( Message message ) throws IOException {
@@ -270,6 +277,7 @@ class ClientThread extends Thread {
         Player player = gameHandler.addPlayer( gameName, currentPlayerName );
         if ( player != null ) {
             this.player = player;
+            playerSockets.put(player, clientSocket);
             sendMessage( new Message( MessageType.JOINGAME, player.getPlayerID() + "," + gameName ) );
         }
         sendGameList();
