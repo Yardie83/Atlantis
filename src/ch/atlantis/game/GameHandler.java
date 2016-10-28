@@ -63,7 +63,6 @@ public class GameHandler {
         Game g = games.get( gameName );
         if ( g.getPlayers().size() == g.getNumberOfPlayers() ) {
             g.setReady( true );
-            //initGame( g );
             return g.isReady();
         }
         return false;
@@ -106,7 +105,7 @@ public class GameHandler {
         if ( gameToAddPlayerTo != null ) {
             System.out.println("Player with ID: " + playerId + " added");
             player.setPlayerId( playerId++ );
-
+            player.setGameName(gameName);
             player.setPlayerColor( player.getPlayerID() );
             gameToAddPlayerTo.addPlayer( player );
             return player;
@@ -120,12 +119,8 @@ public class GameHandler {
 
 
     // Finish initializing the game
-    public void initGame( Game game ) {
-
-    }
-
-    // Start the game, once Player 0 hits the start game button in the client
-    public void startGame( String gameName ) {
-
+    public void initGame(Player hostPlayer) {
+        Game game = games.get( hostPlayer.getGameName() );
+        game.init();
     }
 }

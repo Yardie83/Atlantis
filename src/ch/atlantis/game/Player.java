@@ -18,7 +18,8 @@ public class Player {
     private ArrayList<GamePiece> gamePieces;
     private ArrayList<Card> pathCards;
     private ArrayList<Card> movementCards;
-    private Card bridge;
+    private int bridge;
+    private String gameName;
 
     public Player( String playerName ) {
         this.playerName = playerName;
@@ -26,6 +27,7 @@ public class Player {
         this.movementCards = new ArrayList<>();
         this.gamePieces = new ArrayList<>(4);
         this.playerID = -1;
+        this.bridge = 1;
     }
 
     public String getPlayerName() { return playerName; }
@@ -63,12 +65,8 @@ public class Player {
         this.gamePieces.add(gamePiece);
     }
 
-    public void addBridge(Card bridge) {
-        this.bridge = bridge;
-    }
-
     public void removeBridge(){
-        this.bridge = null;
+        this.bridge = 0;
     }
 
     public ArrayList<Card> getPathCards() {
@@ -105,6 +103,14 @@ public class Player {
 
     public int getPlayerID(){
         return playerID;
+    }
+
+    public void setGameName(String gameName) {
+        this.gameName = gameName;
+    }
+
+    public String getGameName() {
+        return gameName;
     }
 }
 

@@ -4,30 +4,38 @@ import java.util.ArrayList;
 
 /**
  * Created by Hermann Grieder on 07.10.2016.
- *
+ * <p>
  * Single Game instance
  */
 public class Game {
 
     private String gameName;
-    private ArrayList<Player> players;
     private int numberOfPlayers;
     private boolean isReady;
+    private GameModel model;
 
-    public Game( String gameName, int numberOfPlayers) {
+    public Game( String gameName, int numberOfPlayers ) {
 
         this.gameName = gameName;
+        this.model = new GameModel();
         this.isReady = false;
         this.numberOfPlayers = numberOfPlayers;
-        this.players = new ArrayList<>();
+
     }
 
-    public void addPlayer(Player player){
-        players.add( player );
+
+    public void init() {
+        model.init();
     }
 
-    public void removePlayer(Player player){
-        players.remove( player );
+
+
+    public void addPlayer( Player player ) {
+        model.addPlayer( player );
+    }
+
+    public void removePlayer( Player player ) {
+        model.remove( player );
     }
 
     public String getGameName() {
@@ -35,10 +43,10 @@ public class Game {
     }
 
     public ArrayList<Player> getPlayers() {
-        return players;
+        return model.getPlayers();
     }
 
-    public int getNumberOfPlayers(){
+    public int getNumberOfPlayers() {
         return numberOfPlayers;
     }
 
@@ -49,5 +57,6 @@ public class Game {
     public void setReady( boolean ready ) {
         isReady = ready;
     }
+
 }
 

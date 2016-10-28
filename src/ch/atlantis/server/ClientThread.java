@@ -34,6 +34,7 @@ class ClientThread extends Thread {
     private GameHandler gameHandler;
     private boolean loggedIn;
     private String currentPlayerName;
+    private Player player;
 
     private long gameTime;
 
@@ -238,6 +239,8 @@ class ClientThread extends Thread {
                 case JOINGAME:
                     this.handleJoinGame( message );
                     break;
+                case STARTGAME:
+                    this.initGame(this.player);
             }
         } catch ( IOException e ) {
             System.out.println( "User disconnected" );
@@ -247,6 +250,10 @@ class ClientThread extends Thread {
             System.out.println( "Class \"Message\" not found" );
             e.printStackTrace();
         }
+    }
+
+    private void initGame( Player hostPlayer ) {
+        gameHandler.initGame( hostPlayer );
     }
 
     private void handleNewGame( Message message ) throws IOException {
@@ -262,14 +269,15 @@ class ClientThread extends Thread {
 
         Player player = gameHandler.addPlayer( gameName, currentPlayerName );
         if ( player != null ) {
+            this.player = player;
             sendMessage( new Message( MessageType.JOINGAME, player.getPlayerID() + "," + gameName ) );
         }
         sendGameList();
 
         for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
             Game g = entry.getValue();
-            Boolean gameIsReady = gameHandler.isGameFull( gameName );
-                sendMessageToAllClients( MessageType.GAMEREADY, gameName + "," + gameIsReady.toString() );
+            Boolean gameIsReady = gameHandler.isGameFull( g.getGameName() );
+            sendMessageToAllClients( MessageType.GAMEREADY, g.getGameName() + "," + gameIsReady.toString() );
         }
     }
 

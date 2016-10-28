@@ -24,16 +24,10 @@ public class Message implements Serializable{
     public Object getMessageObject() {
         return messageObject;
     }
-    public void setMessageObject(String messageObject){
-        this.messageObject = messageObject;
-    }
 
     public MessageType getMessageType(){
         return messageType;
     }
 
-    public void setMessageType(MessageType messageType){
-        this.messageType = messageType;
-    }
 }
 
