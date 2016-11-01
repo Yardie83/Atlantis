@@ -15,7 +15,7 @@ public class Game {
     private boolean isReady;
     private GameModel model;
 
-    public Game( String gameName, int numberOfPlayers ) {
+    public Game(String gameName, int numberOfPlayers) {
 
         this.gameName = gameName;
         this.model = new GameModel();
@@ -30,13 +30,12 @@ public class Game {
     }
 
 
-
-    public void addPlayer( Player player ) {
-        model.addPlayer( player );
+    public void addPlayer(Player player) {
+        model.addPlayer(player);
     }
 
-    public void removePlayer( Player player ) {
-        model.remove( player );
+    public void removePlayer(Player player) {
+        model.remove(player);
     }
 
     public String getGameName() {
@@ -55,7 +54,7 @@ public class Game {
         return isReady;
     }
 
-    public void setReady( boolean ready ) {
+    public void setReady(boolean ready) {
         isReady = ready;
     }
 

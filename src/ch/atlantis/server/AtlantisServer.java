@@ -10,9 +10,9 @@ import java.util.HashMap;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
- *
+ * <p>
  * Main class of the Server.
- *
+ * <p>
  * Accepts user connections and hands each of them off to a new clientThread.
  */
 

@@ -20,30 +20,28 @@ public class GameModel {
     private ArrayList<Card> movementCards;
     private ArrayList<Card> deck;
 
-    HashMap<String, ArrayList> initList;
-
     public GameModel() {
 
-        this.players = new ArrayList<>();
-        this.tiles = new ArrayList<>();
+        players = new ArrayList<>();
+        tiles = new ArrayList<>();
 
-        this.pathCardsSetA = new ArrayList<>();
+        pathCardsSetA = new ArrayList<>();
         createPathCards(pathCardsSetA);
         cleanCardSetA(pathCardsSetA);
         Collections.shuffle(pathCardsSetA);
 
-        this.pathCardsSetB = new ArrayList<>();
+        pathCardsSetB = new ArrayList<>();
         createPathCards(pathCardsSetB);
         cleanCardSetB(pathCardsSetB);
         Collections.shuffle(pathCardsSetB);
 
-        this.movementCards = new ArrayList<>();
-        createMovementCards(movementCards);
+        movementCards = new ArrayList<>();
+        createMovementCards();
         Collections.shuffle(movementCards);
 
-        this.deck = new ArrayList<>();
+        deck = new ArrayList<>();
 
-        addHandCards(movementCards);
+        addMovementCardsToPlayers(movementCards);
 
         readLayout();
 
@@ -51,29 +49,22 @@ public class GameModel {
 
 
     public HashMap<String, ArrayList> init() {
-
-        createHashMapForGame();
-
-        return initList;
-
+        return createHashMapForGame();
     }
 
-    private void addHandCards(ArrayList<Card> movementCards) {
+    private void addMovementCardsToPlayers(ArrayList<Card> movementCards) {
 
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             for (int k = 0; k < 4 + i; k++) {
-                player.addHandCard(movementCards.get(0));
+                player.addMovementCard(movementCards.get(0));
                 movementCards.remove(0);
-
             }
         }
-
         deck = movementCards;
-
     }
 
-    private void createMovementCards(ArrayList<Card> movementCards) {
+    private void createMovementCards() {
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 15; j++) {
                 this.movementCards.add(new Card(i, CardType.MOVEMENT));
@@ -152,13 +143,13 @@ public class GameModel {
 
                         int value = Integer.parseInt(values[x]);
 
-                        if (value != 000) {
+                        if (value != 0) {
                             pathId = value;
                         } else {
                             pathId = 0;
                         }
 
-                        tiles.add(new Tile(pathId));
+                        tiles.add(new Tile(x, y, pathId));
                     }
                 }
             } catch (IOException e) {
@@ -169,15 +160,17 @@ public class GameModel {
         }
     }
 
-    private void createHashMapForGame() {
+    private HashMap<String, ArrayList> createHashMapForGame() {
 
-        this.initList = new HashMap<>();
+        HashMap<String, ArrayList> initList = new HashMap<>();
 
         initList.put("Players", players);
         initList.put("Tiles", tiles);
         initList.put("PathCardsSetA", pathCardsSetA);
         initList.put("PathCardsSetB", pathCardsSetB);
         initList.put("Deck", deck);
+
+        return initList;
 
     }
 

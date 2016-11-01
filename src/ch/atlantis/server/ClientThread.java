@@ -39,8 +39,8 @@ class ClientThread extends Thread {
 
     private long gameTime;
 
-    ClientThread( Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler
-            gameHandler ) {
+    ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler
+            gameHandler) {
 
         this.clientSocket = clientSocket;
         this.server = server;
@@ -52,38 +52,38 @@ class ClientThread extends Thread {
 
     @Override
     public void run() {
-        while ( running ) {
+        while (running) {
             try {
-                this.inReader = new ObjectInputStream( clientSocket.getInputStream() );
-                this.outputStream = new ObjectOutputStream( clientSocket.getOutputStream() );
-                outputStreams.put( clientSocket, outputStream );
-                System.out.println( "OutputStreams: " + outputStreams.size() );
+                this.inReader = new ObjectInputStream(clientSocket.getInputStream());
+                this.outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+                outputStreams.put(clientSocket, outputStream);
+                System.out.println("OutputStreams: " + outputStreams.size());
 
                 sendWelcomeMessage();
-                sendPlayerName( null );
+                sendPlayerName(null);
                 sendGameList();
 
-                while ( running ) {
+                while (running) {
                     receiveMessage();
                 }
-            } catch ( IOException e ) {
-                System.out.println( "Unable to create reader and/or writer" );
+            } catch (IOException e) {
+                System.out.println("Unable to create reader and/or writer");
                 return;
             } finally {
-                System.out.println( "Thread " + currentThread().getName() + " terminated" );
+                System.out.println("Thread " + currentThread().getName() + " terminated");
             }
         }
     }
 
     private void sendWelcomeMessage() throws IOException {
 
-        outputStream.writeObject( new Message( MessageType.CHAT, "*****************************************\n"
+        outputStream.writeObject(new Message(MessageType.CHAT, "*****************************************\n"
                 + "Welcome to the Atlantis Game Server \n"
                 + "*****************************************\n"
                 + "Server IP Address: "
                 + clientSocket.getLocalAddress()
                 + "\nConnected to Server Port " + clientSocket.getLocalPort()
-                + "\n*****************************************" ) );
+                + "\n*****************************************"));
     }
 
     /**
@@ -94,10 +94,10 @@ class ClientThread extends Thread {
      * @param message Message Object to be sent
      * @throws IOException Throws IOException
      */
-    public void sendMessage( Message message ) throws IOException {
-        outputStream.writeObject( message );
-        System.out.println( "Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message
-                .getMessageObject() );
+    public void sendMessage(Message message) throws IOException {
+        outputStream.writeObject(message);
+        System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message
+                .getMessageObject());
     }
 
     /**
@@ -109,36 +109,36 @@ class ClientThread extends Thread {
      * @param messageType   Type of message
      * @param messageString The actual message to be sent
      */
-    public void sendMessageToAllClients( MessageType messageType, String messageString ) {
+    public void sendMessageToAllClients(MessageType messageType, String messageString) {
 
         // If there are no users connected anymore, don't do anything
 
-        if ( outputStreams.size() <= 0 ) {
+        if (outputStreams.size() <= 0) {
             return;
         }
 
-        Message message = new Message( messageType, messageString );
+        Message message = new Message(messageType, messageString);
 
         // In order to ensure uniqueness of a ChatMessage we add the LocalDateTime to the message.
         // This way a user can enter the same chat message twice in a row. The counterpart can be found
         // in the client application in the GameLobbyController in the addListeners method.
         // Author: Hermann Grieder
 
-        if ( messageType == MessageType.CHAT ) {
+        if (messageType == MessageType.CHAT) {
             messageString = LocalDateTime.now().toString() + " " + messageString;
-            message = new Message( messageType, messageString );
+            message = new Message(messageType, messageString);
         }
 
-        for ( HashMap.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet() ) {
+        for (HashMap.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
             Socket clientSocket = entry.getKey();
             ObjectOutputStream outputStream = entry.getValue();
             {
                 try {
-                    System.out.println( "Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " +
-                            messageString );
-                    outputStream.writeObject( message );
-                } catch ( IOException e ) {
-                    System.out.println( "Could not write to " + clientSocket.getRemoteSocketAddress() );
+                    System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " +
+                            messageString);
+                    outputStream.writeObject(message);
+                } catch (IOException e) {
+                    System.out.println("Could not write to " + clientSocket.getRemoteSocketAddress());
                 }
             }
         }
@@ -153,20 +153,20 @@ class ClientThread extends Thread {
      *
      * @param playerName The new username of the client
      */
-    private void sendPlayerName( String playerName ) {
+    private void sendPlayerName(String playerName) {
         try {
-            if ( !loggedIn ) {
+            if (!loggedIn) {
                 currentPlayerName = "Guest" + server.getGuestNumber();
-                sendMessageToAllClients( MessageType.CHAT, currentPlayerName + " entered the chat" );
+                sendMessageToAllClients(MessageType.CHAT, currentPlayerName + " entered the chat");
             } else {
                 String oldUserName = currentPlayerName;
                 currentPlayerName = playerName;
-                sendMessageToAllClients( MessageType.CHAT, oldUserName + " is now known as: " + currentPlayerName );
+                sendMessageToAllClients(MessageType.CHAT, oldUserName + " is now known as: " + currentPlayerName);
             }
 
-            sendMessage( new Message( MessageType.USERNAME, currentPlayerName ) );
+            sendMessage(new Message(MessageType.USERNAME, currentPlayerName));
 
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -178,32 +178,32 @@ class ClientThread extends Thread {
      */
     private void sendGameList() {
         // Check for empty games and remove them from the list
-        if ( gameHandler.getGames() != null ) {
+        if (gameHandler.getGames() != null) {
             String gameToRemove = null;
-            for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
+            for (HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet()) {
                 Game g = entry.getValue();
-                if ( g.getPlayers().size() == 0 ) {
-                    System.out.println( "Players in Game: " + g.getGameName() + " : " + g.getPlayers().size() );
+                if (g.getPlayers().size() == 0) {
+                    System.out.println("Players in Game: " + g.getGameName() + " : " + g.getPlayers().size());
                     gameToRemove = g.getGameName();
                 }
             }
-            if ( gameToRemove != null ) {
-                gameHandler.getGames().remove( gameToRemove );
+            if (gameToRemove != null) {
+                gameHandler.getGames().remove(gameToRemove);
             }
         }
         // Todo: (loris) databaseHandler getGameList....need to talk about what to do with this.
         //databaseHandler.getGameList();
 
         // Send each game from the Games array in the gameHandler class to all the clients
-        if ( gameHandler.getGames().size() > 0 ) {
-            for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
+        if (gameHandler.getGames().size() > 0) {
+            for (HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet()) {
                 Game g = entry.getValue();
                 String nameOfGame = g.getGameName();
                 int numberOfPlayers = g.getNumberOfPlayers();
                 int currentJoinedUsers = g.getPlayers().size();
 
-                sendMessageToAllClients( MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
-                        currentJoinedUsers );
+                sendMessageToAllClients(MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
+                        currentJoinedUsers);
             }
         }
     }
@@ -218,96 +218,96 @@ class ClientThread extends Thread {
     private void receiveMessage() throws IOException {
         try {
             Message message = (Message) inReader.readObject();
-            System.out.println( "Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message
-                    .getMessageObject() );
+            System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message
+                    .getMessageObject());
 
             switch (message.getMessageType()) {
                 case LOGIN:
-                    this.handleLogin( message );
+                    this.handleLogin(message);
                     break;
                 case CREATEPROFILE:
-                    this.handleCreateProfile( message );
+                    this.handleCreateProfile(message);
                     break;
                 case CHAT:
-                    sendMessageToAllClients( MessageType.CHAT, message.getMessageObject().toString() );
+                    sendMessageToAllClients(MessageType.CHAT, message.getMessageObject().toString());
                     break;
                 case DISCONNECT:
-                    this.handleDisconnectUser( currentPlayerName );
+                    this.handleDisconnectUser(currentPlayerName);
                     break;
                 case NEWGAME:
                     this.handleNewGame(message);
                     break;
                 case JOINGAME:
-                    this.handleJoinGame( message );
+                    this.handleJoinGame(message);
                     break;
                 case STARTGAME:
                     this.initGame(this.player);
             }
-        } catch ( IOException e ) {
-            System.out.println( "User disconnected" );
-            handleDisconnectUser( currentPlayerName );
+        } catch (IOException e) {
+            System.out.println("User disconnected");
+            e.printStackTrace();
+            handleDisconnectUser(currentPlayerName);
 
-        } catch ( ClassNotFoundException e ) {
-            System.out.println( "Class \"Message\" not found" );
+        } catch (ClassNotFoundException e) {
+            System.out.println("Class \"Message\" not found");
             e.printStackTrace();
         }
     }
 
-    private void initGame( Player hostPlayer ) throws  IOException {
-        gameHandler.initGame( hostPlayer );
+    private void initGame(Player hostPlayer) throws IOException {
+        gameHandler.initGame(hostPlayer);
         Game game = gameHandler.getGames().get(hostPlayer.getGameName());
-        for (int i = 0; i < game.getPlayers().size(); i++) {
+        for (Player player : game.getPlayers()) {
             Socket socket = playerSockets.get(player);
-            ObjectOutputStream obOutStream = outputStreams.get(socket);
-            obOutStream.writeObject(gameHandler.initGame(hostPlayer));
+            outputStreams.get(socket).writeObject(new Message(MessageType.GAMEINIT, gameHandler.initGame(hostPlayer)));
         }
     }
 
-    private void handleNewGame( Message message ) throws IOException {
-        if (gameHandler.handleNewGame( message, currentPlayerName )) {
-            handleJoinGame( message );
+    private void handleNewGame(Message message) throws IOException {
+        if (gameHandler.handleNewGame(message, currentPlayerName)) {
+            handleJoinGame(message);
         }
     }
 
-    private void handleJoinGame( Message message ) throws IOException {
+    private void handleJoinGame(Message message) throws IOException {
         // Extract the information from the message
-        String[] gameInformation = message.getMessageObject().toString().split( "," );
-        String gameName = gameInformation[ 0 ];
+        String[] gameInformation = message.getMessageObject().toString().split(",");
+        String gameName = gameInformation[0];
 
-        Player player = gameHandler.addPlayer( gameName, currentPlayerName );
-        if ( player != null ) {
+        Player player = gameHandler.addPlayer(gameName, currentPlayerName);
+        if (player != null) {
             this.player = player;
             playerSockets.put(player, clientSocket);
-            sendMessage( new Message( MessageType.JOINGAME, player.getPlayerID() + "," + gameName ) );
+            sendMessage(new Message(MessageType.JOINGAME, player.getPlayerID() + "," + gameName));
         }
         sendGameList();
 
-        for ( HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet() ) {
+        for (HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet()) {
             Game g = entry.getValue();
-            Boolean gameIsReady = gameHandler.isGameFull( g.getGameName() );
-            sendMessageToAllClients( MessageType.GAMEREADY, g.getGameName() + "," + gameIsReady.toString() );
+            Boolean gameIsReady = gameHandler.isGameFull(g.getGameName());
+            sendMessageToAllClients(MessageType.GAMEREADY, g.getGameName() + "," + gameIsReady.toString());
         }
     }
 
     /**
      * @param message Message received from the client
      */
-    private void handleLogin( Message message ) {
-        String[] credentials = splitMessage( message );
-        String playerName = credentials[ 0 ];
+    private void handleLogin(Message message) {
+        String[] credentials = splitMessage(message);
+        String playerName = credentials[0];
         try {
-            if ( databaseHandler.userLogin( message ) ) {
+            if (databaseHandler.userLogin(message)) {
 
                 //Start Timer
                 gameTime = System.currentTimeMillis();
 
                 loggedIn = true;
-                sendMessage( new Message( MessageType.LOGIN, true ) );
-                sendPlayerName( playerName );
-            } else if ( !( databaseHandler.userLogin( message ) ) ) {
-                sendMessage( new Message( MessageType.LOGIN, false ) );
+                sendMessage(new Message(MessageType.LOGIN, true));
+                sendPlayerName(playerName);
+            } else if (!(databaseHandler.userLogin(message))) {
+                sendMessage(new Message(MessageType.LOGIN, false));
             }
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -315,18 +315,18 @@ class ClientThread extends Thread {
     /**
      * @param message Message received from the client
      */
-    private void handleCreateProfile( Message message ) {
-        String[] credentials = splitMessage( message );
-        String playerName = credentials[ 0 ];
+    private void handleCreateProfile(Message message) {
+        String[] credentials = splitMessage(message);
+        String playerName = credentials[0];
         try {
-            if ( databaseHandler.createProfile( message ) ) {
+            if (databaseHandler.createProfile(message)) {
                 loggedIn = true;
-                sendMessage( new Message( MessageType.CREATEPROFILE, true ) );
-                sendPlayerName( playerName );
+                sendMessage(new Message(MessageType.CREATEPROFILE, true));
+                sendPlayerName(playerName);
             } else {
-                sendMessage( new Message( MessageType.CREATEPROFILE, false ) );
+                sendMessage(new Message(MessageType.CREATEPROFILE, false));
             }
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -338,28 +338,28 @@ class ClientThread extends Thread {
      * @param message Message received from the client
      * @return String[]
      */
-    private String[] splitMessage( Message message ) {
-        return message.getMessageObject().toString().split( "," );
+    private String[] splitMessage(Message message) {
+        return message.getMessageObject().toString().split(",");
     }
 
     /**
      * @param currentPlayerName Current name of the player
      * @throws IOException If if was not possible to close all resources
      */
-    private void handleDisconnectUser( String currentPlayerName ) throws IOException {
-        server.removeThread( currentThread().getId() );
+    private void handleDisconnectUser(String currentPlayerName) throws IOException {
+        server.removeThread(currentThread().getId());
 
         //End Timer
         gameTime = System.currentTimeMillis() - gameTime;
 
-        databaseHandler.enterGameTime( gameTime, this.currentPlayerName );
+        databaseHandler.enterGameTime(gameTime, this.currentPlayerName);
 
-        outputStreams.remove( this.outputStream );
+        outputStreams.remove(this.outputStream);
         running = false;
         this.interrupt();
         inReader.close();
         outputStream.close();
         clientSocket.close();
-        sendMessageToAllClients( MessageType.CHAT, "User " + currentPlayerName + " left the chat" );
+        sendMessageToAllClients(MessageType.CHAT, "User " + currentPlayerName + " left the chat");
     }
 }

@@ -3,15 +3,21 @@ package ch.atlantis.game;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.Serializable;
+
 /**
- * Created by Hermann Grieder on 07.10.2016.
+ * Created by Hermann Grieder on 15/08/16.
+ * <p>
+ * Card class that defines sets the color and the image for the individual card
  */
 
-enum CardType{
+enum CardType {
     PATH, WATER, START, END, BRIDGE, MOVEMENT
 }
 
-public class Card extends Rectangle {
+public class Card extends Rectangle implements Serializable {
+
+    private static final long serialVersionUID = 1597939850705259874L;
 
     private boolean isOnTop;
     private boolean isPlayed;
@@ -20,16 +26,16 @@ public class Card extends Rectangle {
     private CardType cardType;
     private int pathID;
 
-    public final static int BROWN  = 0;
-    public final static int PINK   = 1;
-    public final static int GREY   = 2;
+    public final static int BROWN = 0;
+    public final static int PINK = 1;
+    public final static int GREY = 2;
     public final static int YELLOW = 3;
-    public final static int GREEN  = 4;
-    public final static int BLUE   = 5;
-    public final static int WHITE  = 6;
+    public final static int GREEN = 4;
+    public final static int BLUE = 5;
+    public final static int WHITE = 6;
 
     // Constructor for Movement Cards. They do not have a value associated.
-    public Card(int colorSet, CardType cardType){
+    public Card(int colorSet, CardType cardType) {
 
         this.setWidth(20);
         this.setHeight(40);
@@ -85,13 +91,15 @@ public class Card extends Rectangle {
         return value;
     }
 
-    public int getColorSet() { return colorSet; }
+    public int getColorSet() {
+        return colorSet;
+    }
 
     public CardType getCardType() {
         return cardType;
     }
 
-    public void setPathId(int pathID){
+    public void setPathId(int pathID) {
         this.pathID = pathID;
     }
 
@@ -99,19 +107,21 @@ public class Card extends Rectangle {
         return this.pathID;
     }
 
-    public void setIsOnTop(boolean isOnTop){
+    public void setIsOnTop(boolean isOnTop) {
         this.isOnTop = isOnTop;
     }
 
-    public boolean isOnTop(){
+    public boolean isOnTop() {
         return this.isOnTop;
     }
 
-    public boolean isPlayed() { return this.isPlayed; }
+    public boolean isPlayed() {
+        return this.isPlayed;
+    }
 
-    public void setIsPlayedTrue() { this.isPlayed = true; }
-
-    public void setIsPlayedFalse() { this.isPlayed = false; }
+    public void setIsPlayed(Boolean isPlayed) {
+        this.isPlayed = isPlayed;
+    }
 
 }
 
