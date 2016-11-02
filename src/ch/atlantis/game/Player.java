@@ -24,6 +24,15 @@ public class Player implements Serializable {
         this.movementCards = new ArrayList<>();
         this.gamePieces = new ArrayList<>(4);
         this.bridge = 1;
+        addGamePiece();
+    }
+
+    private void addGamePiece() {
+
+        for (int i = 0; i < 3; i++) {
+            gamePieces.add(new GamePiece());
+        }
+
     }
 
     public String getPlayerName() {
@@ -40,10 +49,6 @@ public class Player implements Serializable {
 
     public int getScore() {
         return score;
-    }
-
-    public void addGamePiece(GamePiece gamePiece) {
-        this.gamePieces.add(gamePiece);
     }
 
     public ArrayList<GamePiece> getGamePieces() {
