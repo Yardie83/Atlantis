@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by Hermann Grieder on 28.10.2016.
@@ -17,6 +18,7 @@ public class GameModel {
     private ArrayList<Tile> tiles;
     private ArrayList<Card> pathCardsSetA;
     private ArrayList<Card> pathCardsSetB;
+    private final ArrayList<Card> pathCards;
     private ArrayList<Card> movementCards;
     private ArrayList<Card> deck;
 
@@ -44,6 +46,9 @@ public class GameModel {
         addMovementCardsToPlayers(movementCards);
 
         readLayout();
+        pathCards = new ArrayList<>();
+        placeCards(pathCardsSetA, pathCardsSetB);
+
 
     }
 
@@ -160,14 +165,90 @@ public class GameModel {
         }
     }
 
+    private void placeCards(ArrayList<Card> pathCardsSetA, ArrayList<Card> pathCardsSetB) {
+
+        Iterator<Card> iteratorA = pathCardsSetA.iterator();
+        Iterator<Card> iteratorB = pathCardsSetB.iterator();
+
+        for (Tile tile : tiles) {
+
+            int pathId = tile.getPathId();
+
+            //Fill the path with water cards before adding the pathCards
+            if (pathId >= 101 && pathId <= 153) {
+                placeSpecialCard(Card.BLUE, CardType.WATER, tile);
+            }
+
+            if (pathId != 0 && pathId != 500) {
+
+                // Place two cards from 101 to 110 and from 120 to 126
+                // Place one card from 111 to 120 from Card set A
+                if (pathId <= 126) {
+                    if (!(pathId >= 111 && pathId <= 120)) {
+                        placeTwoCards(iteratorA, tile);
+                    } else {
+                        placeOneCard(iteratorA, tile);
+                    }
+                }
+
+                // Place two cards from 128 to 133 and from 144 to 153
+                // Place one card from 134 to 143 from Card set B
+                else if (pathId >= 128 && pathId <= 154) {
+                    if (!(pathId >= 134 && pathId <= 143)) {
+                        placeTwoCards(iteratorB, tile);
+                    } else {
+                        placeOneCard(iteratorB, tile);
+                    }
+                }
+                //Start card
+                else if (pathId == 300) {
+                    placeSpecialCard(Card.YELLOW, CardType.START, tile);
+                }
+                //End card
+                else if (pathId == 400) {
+                    placeSpecialCard(Card.GREEN, CardType.END, tile);
+                }
+            }
+        }
+    }
+
+    private void placeSpecialCard(int colorSet, CardType cardType, Tile tile) {
+        Card card = new Card(colorSet, cardType);
+        card.setIsOnTop(true);
+        setIdAndAddCard(card, tile);
+    }
+
+    private void placeOneCard(Iterator<Card> iterator, Tile tile) {
+        Card card = iterator.next();
+        card.setIsOnTop(true);
+        setIdAndAddCard(card, tile);
+    }
+
+    private void placeTwoCards(Iterator<Card> iterator, Tile tile) {
+        Card card;
+        for (int i = 0; i < 2; i++) {
+            card = iterator.next();
+            if (i == 0) {
+                card.setIsOnTop(false);
+            } else {
+                card.setIsOnTop(true);
+            }
+            setIdAndAddCard(card, tile);
+        }
+    }
+
+    private void setIdAndAddCard(Card card, Tile tile) {
+        card.setPathId(tile.getPathId());
+        pathCards.add(card);
+    }
+
     private HashMap<String, ArrayList> createHashMapForGame() {
 
         HashMap<String, ArrayList> initList = new HashMap<>();
 
         initList.put("Players", players);
         initList.put("Tiles", tiles);
-        initList.put("PathCardsSetA", pathCardsSetA);
-        initList.put("PathCardsSetB", pathCardsSetB);
+        initList.put("PathCards", pathCards);
         initList.put("Deck", deck);
 
         return initList;

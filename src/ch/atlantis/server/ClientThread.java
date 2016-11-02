@@ -12,6 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -255,11 +256,11 @@ class ClientThread extends Thread {
     }
 
     private void initGame(Player hostPlayer) throws IOException {
-        gameHandler.initGame(hostPlayer);
+        HashMap<String, ArrayList> initGame = gameHandler.initGame(hostPlayer);
         Game game = gameHandler.getGames().get(hostPlayer.getGameName());
         for (Player player : game.getPlayers()) {
             Socket socket = playerSockets.get(player);
-            outputStreams.get(socket).writeObject(new Message(MessageType.GAMEINIT, gameHandler.initGame(hostPlayer)));
+            outputStreams.get(socket).writeObject(new Message(MessageType.GAMEINIT, initGame));
         }
     }
 

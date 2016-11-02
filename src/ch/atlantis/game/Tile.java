@@ -19,4 +19,7 @@ public class Tile implements Serializable {
         this.pathId = pathId;
     }
 
+    public int getPathId() {
+        return pathId;
+    }
 }
