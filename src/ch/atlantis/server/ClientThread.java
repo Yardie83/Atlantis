@@ -1,9 +1,7 @@
 package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
-import ch.atlantis.game.Game;
-import ch.atlantis.game.GameHandler;
-import ch.atlantis.game.Player;
+import ch.atlantis.game.*;
 import ch.atlantis.util.Message;
 import ch.atlantis.util.MessageType;
 
@@ -37,6 +35,9 @@ class ClientThread extends Thread {
     private boolean loggedIn;
     private String currentPlayerName;
     private Player player;
+    private GameController gameController;
+    private Card card;
+    private GamePiece gamePiece;
 
     private long gameTime;
 
@@ -243,6 +244,10 @@ class ClientThread extends Thread {
                     break;
                 case STARTGAME:
                     this.initGame(this.player);
+                    break;
+                case GAMEHANDLING:
+                    this.handlePlayersEvent(message);
+                    break;
             }
         } catch (IOException e) {
             System.out.println("User disconnected");
@@ -287,6 +292,17 @@ class ClientThread extends Thread {
             Game g = entry.getValue();
             Boolean gameIsReady = gameHandler.isGameFull(g.getGameName());
             sendMessageToAllClients(MessageType.GAMEREADY, g.getGameName() + "," + gameIsReady.toString());
+        }
+    }
+
+    // Fabian Witschi, method to handle the moves from the player to the part he would like to get to
+    private void handlePlayersEvent(Message message) throws IOException {
+        HashMap<String, Object> mapToReturn = new HashMap<>();
+
+        if (message.getMessageObject() instanceof HashMap) {
+            mapToReturn = gameController.handlePlayerEvent(message);
+
+            sendMessage(new Message(MessageType.GAMEHANDLING, mapToReturn));
         }
     }
 

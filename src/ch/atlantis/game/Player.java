@@ -22,7 +22,7 @@ public class Player implements Serializable {
         this.gameName = gameName;
 
         this.movementCards = new ArrayList<>();
-        this.gamePieces = new ArrayList<>(4);
+        this.gamePieces = new ArrayList<>(3);
         this.bridge = 1;
         addGamePiece();
     }

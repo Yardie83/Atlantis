@@ -268,5 +268,7 @@ public class GameModel {
         return players;
     }
 
+    public ArrayList<Card> getPathCards() { return pathCards; }
+
 
 }
