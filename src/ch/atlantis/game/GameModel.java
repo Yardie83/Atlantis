@@ -43,12 +43,11 @@ public class GameModel {
 
         deck = new ArrayList<>();
 
-        addMovementCardsToPlayers(movementCards);
+        deck = movementCards;
 
         readLayout();
         pathCards = new ArrayList<>();
         placeCards(pathCardsSetA, pathCardsSetB);
-
 
     }
 
@@ -57,18 +56,39 @@ public class GameModel {
         return createHashMapForGame();
     }
 
-    private void addMovementCardsToPlayers(ArrayList<Card> movementCards) {
+    // Fabian
+    private void addMovementCardsToPlayer(ArrayList<Card> deck, Player player) {
 
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            for (int k = 0; k < 4 + i; k++) {
-                player.addMovementCard(movementCards.get(0));
-                movementCards.remove(0);
-            }
+        switch (player.getPlayerID()) {
+            case 0:
+                for (int i = 0; i < 4; i++) {
+                    player.addMovementCard(deck.get(0));
+                    deck.remove(0);
+                }
+                break;
+            case 1:
+                for (int i = 0; i < 5; i++) {
+                    player.addMovementCard(deck.get(0));
+                    deck.remove(0);
+                }
+                break;
+            case 2:
+                for (int i = 0; i < 6; i++) {
+                    player.addMovementCard(deck.get(0));
+                    deck.remove(0);
+                }
+                break;
+            case 3:
+                for (int i = 0; i < 7; i++) {
+                    player.addMovementCard(deck.get(0));
+                    deck.remove(0);
+                }
+                break;
         }
-        deck = movementCards;
+
     }
 
+    // Fabian
     private void createMovementCards() {
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 15; j++) {
@@ -77,6 +97,7 @@ public class GameModel {
         }
     }
 
+    // Fabian
     private void cleanCardSetA(ArrayList<Card> pathCardsSetA) {
         for (int i = 0; i < pathCardsSetA.size(); i++) {
             Card card = pathCardsSetA.get(i);
@@ -97,6 +118,7 @@ public class GameModel {
         }
     }
 
+    // Fabian
     private void cleanCardSetB(ArrayList<Card> pathCardsSetB) {
         for (int i = 0; i < pathCardsSetB.size(); i++) {
             Card card = pathCardsSetB.get(i);
@@ -117,6 +139,7 @@ public class GameModel {
         }
     }
 
+    // Fabian
     private void createPathCards(ArrayList<Card> pathCardsSet) {
         for (int j = 0; j < 7; j++) {
             for (int k = 1; k <= 7; k++) {
@@ -242,6 +265,7 @@ public class GameModel {
         pathCards.add(card);
     }
 
+    // Fabian
     private HashMap<String, ArrayList> createHashMapForGame() {
 
         HashMap<String, ArrayList> initList = new HashMap<>();
@@ -257,6 +281,9 @@ public class GameModel {
 
 
     public void addPlayer(Player player) {
+        addMovementCardsToPlayer(deck, player);
+        System.out.println("Size of deck: " + deck.size());
+        System.out.println("Size of movementcards in player in model class: " + player.getMovementCards().size());
         players.add(player);
     }
 
@@ -269,6 +296,5 @@ public class GameModel {
     }
 
     public ArrayList<Card> getPathCards() { return pathCards; }
-
 
 }

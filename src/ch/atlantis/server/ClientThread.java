@@ -102,6 +102,18 @@ class ClientThread extends Thread {
                 .getMessageObject());
     }
 
+    // Fabian
+    public void sendMessageToAllClients(Message message) throws IOException {
+
+        Game game = gameHandler.getGames().get(currentPlayerName);
+        for (Player player : game.getPlayers()) {
+            Socket socket = playerSockets.get(player);
+            outputStreams.get(socket).writeObject(message);
+            System.out.println("Sending to User:     " + socket + " -> " + message
+                    .getMessageObject());
+        }
+    }
+
     /**
      * Sends a message to all clients currently connected. If the messageType is Chat, the
      * current DateTime is added to ensure uniqueness of the message to be sent.
@@ -264,6 +276,7 @@ class ClientThread extends Thread {
         HashMap<String, ArrayList> initGame = gameHandler.initGame(hostPlayer);
         Game game = gameHandler.getGames().get(hostPlayer.getGameName());
         for (Player player : game.getPlayers()) {
+            System.out.println("Size of cards from player " + player.getPlayerName() + ": " + player.getMovementCards().size());
             Socket socket = playerSockets.get(player);
             outputStreams.get(socket).writeObject(new Message(MessageType.GAMEINIT, initGame));
         }
@@ -302,7 +315,7 @@ class ClientThread extends Thread {
         if (message.getMessageObject() instanceof HashMap) {
             mapToReturn = gameController.handlePlayerEvent(message);
 
-            sendMessage(new Message(MessageType.GAMEHANDLING, mapToReturn));
+            sendMessageToAllClients(new Message(MessageType.GAMEHANDLING, mapToReturn));
         }
     }
 
