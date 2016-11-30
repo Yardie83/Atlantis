@@ -37,12 +37,8 @@ public class Card extends Rectangle implements Serializable {
     // Constructor for Movement Cards. They do not have a value associated.
     public Card(int colorSet, CardType cardType) {
 
-        this.setWidth(20);
-        this.setHeight(40);
         this.cardType = cardType;
         this.colorSet = colorSet;
-        this.setStroke(Color.BLACK);
-        applyColorSet(colorSet);
         this.isPlayed = false;
     }
 
@@ -52,39 +48,7 @@ public class Card extends Rectangle implements Serializable {
         this.value = value;
         this.colorSet = colorSet;
         this.cardType = cardType;
-        this.setStroke(Color.BLACK);
-        applyColorSet(colorSet);
-    }
 
-    private void applyColorSet(int colorSet) {
-        switch (colorSet) {
-            case BROWN:
-                super.setFill(Color.BROWN);
-                break;
-            case PINK:
-                super.setFill(Color.PINK);
-                break;
-            case GREY:
-                super.setFill(Color.GREY);
-                break;
-            case YELLOW:
-                super.setFill(Color.YELLOW);
-                break;
-            case GREEN:
-                super.setFill(Color.GREEN);
-                break;
-            case BLUE:
-                super.setFill(Color.BLUE);
-                break;
-            case WHITE:
-                super.setFill(Color.WHITE);
-                break;
-            case 7:
-                super.setFill(null);
-                break;
-            default:
-                super.setFill(null);
-        }
     }
 
     public int getValue() {
