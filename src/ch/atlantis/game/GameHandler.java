@@ -14,6 +14,7 @@ import java.util.HashMap;
  */
 
 public class GameHandler {
+
     private HashMap<String, Game> games;
 
     public GameHandler() {

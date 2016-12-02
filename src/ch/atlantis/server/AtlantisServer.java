@@ -2,7 +2,10 @@ package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
 import ch.atlantis.game.GameHandler;
+import javafx.scene.image.Image;
 
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
