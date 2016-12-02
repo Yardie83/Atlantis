@@ -6,6 +6,7 @@ package ch.atlantis.game;
 public class GameController {
     public GameController() {
 
+
     }
 
 }
