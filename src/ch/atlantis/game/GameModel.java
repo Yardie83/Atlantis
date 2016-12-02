@@ -43,17 +43,14 @@ public class GameModel {
 
         deck = new ArrayList<>();
 
-        addMovementCardsToPlayers(movementCards);
-
         readLayout();
         pathCards = new ArrayList<>();
         placeCards(pathCardsSetA, pathCardsSetB);
 
-
     }
 
-
     public HashMap<String, ArrayList> init() {
+        addMovementCardsToPlayers(movementCards);
         return createHashMapForGame();
     }
 
@@ -132,8 +129,6 @@ public class GameModel {
      */
     private void readLayout() {
 
-        int pathId;
-
         try {
             BufferedReader bf = new BufferedReader(new FileReader("src/ch/atlantis/res/GameBoardLayout.txt"));
 
@@ -146,13 +141,7 @@ public class GameModel {
                     String[] values = currentLine.trim().split(" ");
                     for (int x = 0; x < values.length; x++) {
 
-                        int value = Integer.parseInt(values[x]);
-
-                        if (value != 0) {
-                            pathId = value;
-                        } else {
-                            pathId = 0;
-                        }
+                        int pathId = Integer.parseInt(values[x]);
 
                         tiles.add(new Tile(x, y, pathId));
                     }
@@ -268,7 +257,9 @@ public class GameModel {
         return players;
     }
 
-    public ArrayList<Card> getPathCards() { return pathCards; }
+    public ArrayList<Card> getPathCards() {
+        return pathCards;
+    }
 
 
 }

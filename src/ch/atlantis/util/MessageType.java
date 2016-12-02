@@ -21,6 +21,6 @@ public enum MessageType {
     JOINGAME,
     STARTGAME,
     GAMEINIT,
-    GAMEHANDLING
+    MOVE
 }
 

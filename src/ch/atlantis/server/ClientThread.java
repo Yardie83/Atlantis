@@ -245,8 +245,8 @@ class ClientThread extends Thread {
                 case STARTGAME:
                     this.initGame(this.player);
                     break;
-                case GAMEHANDLING:
-                    this.handlePlayersEvent(message);
+                case MOVE:
+                    this.handleMove(message);
                     break;
             }
         } catch (IOException e) {
@@ -295,14 +295,20 @@ class ClientThread extends Thread {
         }
     }
 
-    // Fabian Witschi, method to handle the moves from the player to the part he would like to get to
-    private void handlePlayersEvent(Message message) throws IOException {
-        HashMap<String, Object> mapToReturn = new HashMap<>();
+    /**
+     * Handles the Move message by calling the checkMove method in the game..........(model / controller?)
+     * Informs the players about the new state of the game. If the game is not over, the information about
+     * the move of the player and who the next player is will be shared with all the players. If the game is over
+     * the game over message will be sent.
+     *
+     * Fabian Witschi
+     * @param message
+     * @throws IOException
+     */
+    private void handleMove(Message message) throws IOException {
 
         if (message.getMessageObject() instanceof HashMap) {
-            mapToReturn = gameController.handlePlayerEvent(message);
 
-            sendMessage(new Message(MessageType.GAMEHANDLING, mapToReturn));
         }
     }
 

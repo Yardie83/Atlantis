@@ -21,14 +21,11 @@ public class Game {
         this.model = new GameModel();
         this.isReady = false;
         this.numberOfPlayers = numberOfPlayers;
-
     }
-
 
     public HashMap<String, ArrayList> init() {
         return model.init();
     }
-
 
     public void addPlayer(Player player) {
         model.addPlayer(player);
