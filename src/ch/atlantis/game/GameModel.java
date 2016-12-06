@@ -27,6 +27,7 @@ public class GameModel {
     private ArrayList<Card> discardedCards;
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
+    private Card newCardFromDeck;
 
     public GameModel() {
 
@@ -451,6 +452,8 @@ public class GameModel {
      * @param pathId The current pathId of the gamePiece that was moved there
      * @return The price to cross
      */
+
+    // FIXME: 06.12.2016 : This produces a stackOverflow exception.
     private int getPriceForCrossing(int pathId) {
         int pathIdBehind = pathId - 1;
         int pathIdAfter = pathId + 1;
@@ -557,8 +560,9 @@ public class GameModel {
             deck = discardedCards;
             Collections.shuffle(deck);
         }
-
-        players.get(activePlayerId).getMovementCards().add(deck.get(0));
+        newCardFromDeck = deck.get(0);
+        players.get(activePlayerId).getMovementCards().add(newCardFromDeck);
+        System.out.println("GameModel -> Card: " + newCardFromDeck.getColorSet());
         deck.remove(0);
     }
 
@@ -643,6 +647,7 @@ public class GameModel {
         gameStateMap.put("TargetPathId", targetPathId);
         gameStateMap.put("IndexOfCardToRemove", indexOfCardToRemove );
         gameStateMap.put("IndexOfCardToShow", indexOfCardToShow );
+        gameStateMap.put("DeckCard", newCardFromDeck);
 
         return gameStateMap;
     }
