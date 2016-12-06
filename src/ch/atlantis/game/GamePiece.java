@@ -10,29 +10,16 @@ import java.io.Serializable;
 public class GamePiece extends Rectangle implements Serializable {
 
     private static final long serialVersionUID = 7661939850705259125L;
-    private int pathIdOfGamePiece;
-    private int gamePiecePlayerId;
-    private double x;
-    private double y;
+    private int currentPathId;
+
 
     public GamePiece() {
-
+        currentPathId = 300;
     }
 
-    public void moveGamePiece(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
+    public void setCurrentPathId(int currentPathId) { this.currentPathId = currentPathId; }
 
-    public double getGamePieceX() { return x; }
-
-    public double getGamePieceY() { return y; }
-
-    public void setPathIdOfGamePiece(int pathIdOfGamePiece) { this.pathIdOfGamePiece = pathIdOfGamePiece; }
-
-    public int getPathIdOfGamePiece() { return pathIdOfGamePiece; }
-
-    public int getGamePiecePlayerId() { return gamePiecePlayerId; }
+    public int getCurrentPathId() { return currentPathId; }
 
 }
 

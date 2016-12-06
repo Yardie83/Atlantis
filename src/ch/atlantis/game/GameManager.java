@@ -9,15 +9,15 @@ import java.util.HashMap;
 /**
  * Created by Hermann Grieder on 23.08.16.
  * <p>
- * Handles all game related functions, like adding players to a game, adding created games
+ * Manages all games. Creates new games, adds players to it and like adding players to a game, adding created games
  * to a gameList. Also creates a new game instance.
  */
 
-public class GameHandler {
+public class GameManager {
 
     private HashMap<String, Game> games;
 
-    public GameHandler() {
+    public GameManager() {
         games = new HashMap<>();
     }
 
@@ -30,30 +30,22 @@ public class GameHandler {
      *
      * @param message Message received from the client
      */
-    public boolean handleNewGame(Message message, String currentPlayerName) throws IOException {
+    public boolean handleNewGame(Message message) throws IOException {
 
         // Extract the information from the message
         String[] gameInformation = message.getMessageObject().toString().split(",");
         String gameName = gameInformation[0];
         Integer nrOfPlayers = Integer.parseInt(gameInformation[1]);
 
-        // Create and add a new game to the games ArrayList in
-        // the GameHandler with the above game information
-        if (addGame(gameName, nrOfPlayers)) {
-            System.out.println("Game: " + gameName + " added");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean addGame(String gameName, Integer nrOfPlayers) {
-        // If the game already exists, do nothing
+        // Create and add a new game to the games ArrayList with the above game information.
+        // If the game already exists, return false.
         if (games.containsKey(gameName)) {
             return false;
         } else {
             // If the game does not exist, create it and add it to the list of games
             Game game = new Game(gameName, nrOfPlayers);
             games.put(gameName, game);
+            System.out.println("Game: " + gameName + " added");
             return true;
         }
     }
@@ -110,15 +102,33 @@ public class GameHandler {
         return null;
     }
 
+    public boolean handleMove(Game game, HashMap<String, Object> gameStateMap){
+        return game.getGameController().handleMove(gameStateMap);
+
+    }
+
     public HashMap<String, Game> getGames() {
         return games;
     }
 
 
     // Finish initializing the game
-    public HashMap<String, ArrayList> initGame(Player hostPlayer) {
+    public HashMap<String, Object> initGame(Player hostPlayer) {
         Game game = games.get(hostPlayer.getGameName());
         return game.init();
 
+    }
+
+    public boolean isGameOver(Game game) {
+        return game.getGameController().isGameOver();
+    }
+
+    public HashMap<String, Object> writeGameState(Game game) {
+        return game.getGameController().writeGameState();
+    }
+
+    public Game findGame(HashMap<String, Object> gameStateMap){
+        String gameName = (String) gameStateMap.get("GameName");
+        return games.get(gameName);
     }
 }

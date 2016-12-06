@@ -32,7 +32,6 @@ public class Player implements Serializable {
         for (int i = 0; i < 3; i++) {
             gamePieces.add(new GamePiece());
         }
-
     }
 
     public String getPlayerName() {

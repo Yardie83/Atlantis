@@ -31,23 +31,19 @@ class ClientThread extends Thread {
     private static HashMap<Player, Socket> playerSockets = new HashMap<>();
     private static Map<Socket, ObjectOutputStream> outputStreams = new HashMap<>();
     private DatabaseHandler databaseHandler;
-    private GameHandler gameHandler;
+    private GameManager gameManager;
     private boolean loggedIn;
     private String currentPlayerName;
     private Player player;
-    private GameController gameController;
-    private Card card;
-    private GamePiece gamePiece;
-
     private long gameTime;
 
-    ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameHandler
-            gameHandler) {
+    ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameManager
+            gameManager) {
 
         this.clientSocket = clientSocket;
         this.server = server;
         this.databaseHandler = databaseHandler;
-        this.gameHandler = gameHandler;
+        this.gameManager = gameManager;
         loggedIn = false;
         running = true;
     }
@@ -180,9 +176,9 @@ class ClientThread extends Thread {
      */
     private void sendGameList() {
         // Check for empty games and remove them from the list
-        if (gameHandler.getGames() != null) {
+        if (gameManager.getGames() != null) {
             String gameToRemove = null;
-            for (HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet()) {
+            for (HashMap.Entry<String, Game> entry : gameManager.getGames().entrySet()) {
                 Game g = entry.getValue();
                 if (g.getPlayers().size() == 0) {
                     System.out.println("Players in Game: " + g.getGameName() + " : " + g.getPlayers().size());
@@ -190,15 +186,15 @@ class ClientThread extends Thread {
                 }
             }
             if (gameToRemove != null) {
-                gameHandler.getGames().remove(gameToRemove);
+                gameManager.getGames().remove(gameToRemove);
             }
         }
         // Todo: (loris) databaseHandler getGameList....need to talk about what to do with this.
         //databaseHandler.getGameList();
 
-        // Send each game from the Games array in the gameHandler class to all the clients
-        if (gameHandler.getGames().size() > 0) {
-            for (HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet()) {
+        // Send each game from the Games list in the gameManager to all the clients
+        if (gameManager.getGames().size() > 0) {
+            for (HashMap.Entry<String, Game> entry : gameManager.getGames().entrySet()) {
                 Game g = entry.getValue();
                 String nameOfGame = g.getGameName();
                 int numberOfPlayers = g.getNumberOfPlayers();
@@ -243,7 +239,7 @@ class ClientThread extends Thread {
                     this.handleJoinGame(message);
                     break;
                 case STARTGAME:
-                    this.initGame(this.player);
+                    this.initGame();
                     break;
                 case MOVE:
                     this.handleMove(message);
@@ -251,64 +247,10 @@ class ClientThread extends Thread {
             }
         } catch (IOException e) {
             System.out.println("User disconnected");
-            e.printStackTrace();
             handleDisconnectUser(currentPlayerName);
 
         } catch (ClassNotFoundException e) {
             System.out.println("Class \"Message\" not found");
-            e.printStackTrace();
-        }
-    }
-
-    private void initGame(Player hostPlayer) throws IOException {
-        HashMap<String, ArrayList> initGame = gameHandler.initGame(hostPlayer);
-        Game game = gameHandler.getGames().get(hostPlayer.getGameName());
-        for (Player player : game.getPlayers()) {
-            Socket socket = playerSockets.get(player);
-            outputStreams.get(socket).writeObject(new Message(MessageType.GAMEINIT, initGame));
-        }
-    }
-
-    private void handleNewGame(Message message) throws IOException {
-        if (gameHandler.handleNewGame(message, currentPlayerName)) {
-            handleJoinGame(message);
-        }
-    }
-
-    private void handleJoinGame(Message message) throws IOException {
-        // Extract the information from the message
-        String[] gameInformation = message.getMessageObject().toString().split(",");
-        String gameName = gameInformation[0];
-
-        Player player = gameHandler.addPlayer(gameName, currentPlayerName);
-        if (player != null) {
-            this.player = player;
-            playerSockets.put(player, clientSocket);
-            sendMessage(new Message(MessageType.JOINGAME, player.getPlayerID() + "," + gameName));
-        }
-        sendGameList();
-
-        for (HashMap.Entry<String, Game> entry : gameHandler.getGames().entrySet()) {
-            Game g = entry.getValue();
-            Boolean gameIsReady = gameHandler.isGameFull(g.getGameName());
-            sendMessageToAllClients(MessageType.GAMEREADY, g.getGameName() + "," + gameIsReady.toString());
-        }
-    }
-
-    /**
-     * Handles the Move message by calling the checkMove method in the game..........(model / controller?)
-     * Informs the players about the new state of the game. If the game is not over, the information about
-     * the move of the player and who the next player is will be shared with all the players. If the game is over
-     * the game over message will be sent.
-     *
-     * Fabian Witschi
-     * @param message
-     * @throws IOException
-     */
-    private void handleMove(Message message) throws IOException {
-
-        if (message.getMessageObject() instanceof HashMap) {
-
         }
     }
 
@@ -354,12 +296,96 @@ class ClientThread extends Thread {
         }
     }
 
+    private void handleNewGame(Message message) throws IOException {
+        if (gameManager.handleNewGame(message)) {
+            handleJoinGame(message);
+        }
+    }
+
+    private void handleJoinGame(Message message) throws IOException {
+        // Extract the information from the message
+        String[] gameInformation = message.getMessageObject().toString().split(",");
+        String gameName = gameInformation[0];
+
+        Player player = gameManager.addPlayer(gameName, currentPlayerName);
+        if (player != null) {
+            this.player = player;
+            playerSockets.put(player, clientSocket);
+            sendMessage(new Message(MessageType.JOINGAME, player.getPlayerID() + "," + gameName));
+        }
+        sendGameList();
+
+        for (HashMap.Entry<String, Game> entry : gameManager.getGames().entrySet()) {
+            Game g = entry.getValue();
+            Boolean gameIsReady = gameManager.isGameFull(g.getGameName());
+            sendMessageToAllClients(MessageType.GAMEREADY, g.getGameName() + "," + gameIsReady.toString());
+        }
+    }
 
     /**
-     * Splits a message at the "," sign.
+     * After receiving the game start message, some final initialization steps need to be taken
+     * in order to produce all the needed information to play the game. After initialization it send
+     * the finished game state map to all the players in that game.
+     * @throws IOException If the message could not be sent
+     */
+    private void initGame() throws IOException {
+        Player currentPlayer = this.player;
+        HashMap<String, Object> initialGameStateMap = gameManager.initGame(currentPlayer);
+        Message message = new Message(MessageType.GAMEINIT, initialGameStateMap);
+        sendMessageToAllPlayers(currentPlayer, message);
+    }
+
+    /**
+     * Handles the Move message by calling the handleMove method in the gameManager.
+     * Informs the players about the new state of the game. Checks if the game is over and
+     * informs every player after each turn if it is or not.
+     * <p>
+     * Fabian Witschi
+     *
+     * @param message The incoming message
+     * @throws IOException If the message could not be sent
+     */
+    @SuppressWarnings("unchecked")
+    private void handleMove(Message message) throws IOException {
+        if (message.getMessageObject() instanceof HashMap) {
+            HashMap<String, Object> incomingGameState = (HashMap<String, Object>) message.getMessageObject();
+            Player currentPlayer = this.player;
+            Game game = gameManager.findGame(incomingGameState);
+            // Check if the move is valid
+            if (gameManager.handleMove(game, incomingGameState)) {
+                // The move is valid, now inform all the players of the changes.
+                HashMap<String, Object> newGameState = gameManager.writeGameState(game);
+                sendMessageToAllPlayers(currentPlayer, new Message(MessageType.MOVE, newGameState));
+            } else {
+                //TODO: do something when the move is not valid
+            }
+            // Check if the game is over and inform all the players if it is or not
+            boolean isGameOver = gameManager.isGameOver(game);
+            sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
+            System.out.println("GameOver: " + isGameOver);
+        }
+    }
+
+    /**
+     * Sends a message to all players.
+     * @param currentPlayer To find the game and its player to send the message to
+     * @param message Message to be sent
+     * @throws IOException If the message could not be sent
+     */
+    private void sendMessageToAllPlayers(Player currentPlayer, Message message) throws IOException {
+        Game game = gameManager.getGames().get(currentPlayer.getGameName());
+        for (Player player : game.getPlayers()) {
+            Socket socket = playerSockets.get(player);
+            outputStreams.get(socket).writeObject(message);
+        }
+    }
+
+
+    /**
+     * Splits a message at the delimiter sign into individual strings and returns them in an string array.
      *
      * @param message Message received from the client
-     * @return String[]
+     * @return String[] with the individual split strings
      */
     private String[] splitMessage(Message message) {
         return message.getMessageObject().toString().split(",");
@@ -370,6 +396,7 @@ class ClientThread extends Thread {
      * @throws IOException If if was not possible to close all resources
      */
     private void handleDisconnectUser(String currentPlayerName) throws IOException {
+
         server.removeThread(currentThread().getId());
 
         //End Timer

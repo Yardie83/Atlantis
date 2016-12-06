@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 
 enum CardType {
-    PATH, WATER, START, END, BRIDGE, MOVEMENT
+    PATH, WATER, START, END, MOVEMENT
 }
 
 public class Card extends Rectangle implements Serializable {

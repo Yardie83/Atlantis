@@ -1,11 +1,8 @@
 package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
-import ch.atlantis.game.GameHandler;
-import javafx.scene.image.Image;
+import ch.atlantis.game.GameManager;
 
-import javax.imageio.ImageIO;
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -28,7 +25,7 @@ public class AtlantisServer {
 
         AtlantisServer server = new AtlantisServer();
 
-        GameHandler gameHandler = new GameHandler();
+        GameManager gameManager = new GameManager();
 
         ServerSocket serverSocket = new ServerSocket(PORT);
         System.out.println("Server is running");
@@ -45,7 +42,7 @@ public class AtlantisServer {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted: " + clientSocket.getRemoteSocketAddress());
 
-                ClientThread clientThread = new ClientThread(clientSocket, server, databaseHandler, gameHandler);
+                ClientThread clientThread = new ClientThread(clientSocket, server, databaseHandler, gameManager);
                 clientThreads.put(clientThread.getId(), clientSocket);
                 System.out.println("Starting Thread: " + clientThread.getId());
                 clientThread.start();
