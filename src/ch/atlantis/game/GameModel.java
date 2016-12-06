@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -18,11 +19,14 @@ public class GameModel {
     private ArrayList<Card> deck;
     private int currentTurnLocal;
     private int currentTurnRemote;
-    private Card selectedCard;
+    private int selectedCard;
     private int selectedGamePieceIndex;
     private int activePlayerId;
     private int targetPathIdRemote;
     private int targetPathId;
+    private ArrayList<Card> discardedCards;
+    private int indexOfCardToRemove;
+    private int indexOfCardToShow;
 
     public GameModel() {
 
@@ -45,6 +49,7 @@ public class GameModel {
         Collections.shuffle(movementCards);
 
         deck = new ArrayList<>();
+        discardedCards = new ArrayList<>();
 
         readLayout();
         pathCards = new ArrayList<>();
@@ -252,20 +257,21 @@ public class GameModel {
      * @return True if the game is over
      */
     public boolean isGameOver() {
-        boolean stillPlaying = false;
+        boolean gameOver = true;
         for (Player player : players) {
             for (GamePiece gamePiece : player.getGamePieces()) {
                 if (gamePiece.getCurrentPathId() != 400) {
-                    stillPlaying = true;
+                    gameOver = false;
                 }
             }
         }
-        return !stillPlaying;
+        System.out.println("GameModel -> GameOver: " + gameOver);
+        return gameOver;
     }
 
     public boolean handleMove() {
 
-        // Check if the games have the same turn number
+        // Check if the remote and local game have the same turn number
         if (this.currentTurnLocal != currentTurnRemote) {
             System.out.println("GameModel -> PlayerTurns do not match\nthis.PlayerTurn:" + this.currentTurnLocal + "PlayerTurn: " + currentTurnRemote);
             return false;
@@ -276,24 +282,47 @@ public class GameModel {
             return false;
         }
 
-        // TODO: Act on move according to the comment below
-        // If the move is valid we have to remove the movement card played from the player, add the appropriate amount of
-        // movement cards to his hand from the deck, update the game piece path id, increase the currentTurnLocal by 1 and
-        // update the score
-        GamePiece gamePiece = players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex);
-        // Find the pathId on the server side
-        int targetPathId = findTargetPathId(gamePiece);
-        // Check if the targetPathId matches. If it does, set the new pathId
-        if (targetPathId != targetPathIdRemote) {
-            System.out.println("GameModel - > TargetPathIds do not match");
-            System.out.println("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
+        GamePiece activeGamePiece = players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex);
+
+        // Find the target pathId on the server side
+        targetPathId = findTargetPathId(activeGamePiece);
+
+        // Check if the target pathId is already occupied by someone else
+        boolean targetIsOccupied = checkIfOccupied(targetPathId, activeGamePiece);
+
+        // Check if there is water on the way to the target. Return the pathId of that water tile or 0 if not water is on the way
+        int waterOnTheWayPathId = checkIfWaterOnTheWay(activeGamePiece.getCurrentPathId(), targetPathId);
+
+        // If there is water on the way to the target then calculate the price to cross
+        int priceToCrossWater = 0;
+        if (waterOnTheWayPathId != 0) {
+            priceToCrossWater = getPriceForCrossing(waterOnTheWayPathId);
             return false;
-        } else {
-            System.out.println("GameModel - > TargetPathIds match");
-            System.out.println("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
-            players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
         }
 
+        // Set the targetPathId as the currentPathId in the active gamePiece
+        players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
+
+        // Remove the movement card played by the player and add it to the discarded cards list
+        Card cardToDiscard =  players.get(activePlayerId).getMovementCards().get(selectedCard);
+        players.get(activePlayerId).getMovementCards().remove(selectedCard);
+        discardedCards.add(cardToDiscard);
+        System.out.println("GameModel -> Movement card removed");
+        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
+
+        // Pick up the card behind the gamePiece
+        int scoreToAdd = removePathCardFromPath(targetPathId);
+        // TODO: We need a list for the individuals score picked up by the player. So we can later pay with it.
+        // Add the score of that card to the player
+        players.get(activePlayerId).addScore(scoreToAdd);
+        System.out.println("GameModel -> Score of " + scoreToAdd + " added to " + players.get(activePlayerId).getPlayerName());
+
+        // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
+        // that has reached the end, one additional card
+        addCardFromDeckToPlayer();
+        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
+
+        // Increase the turn count
         currentTurnLocal++;
         if (currentTurnLocal >= players.size()) {
             currentTurnLocal = 0;
@@ -302,7 +331,15 @@ public class GameModel {
         return true;
     }
 
-    public int findTargetPathId(GamePiece activeGamePiece) {
+    /**
+     * Hermann Grieder
+     * <br>
+     * Finds and returns the pathId to which the gamePiece should be move to ultimately.
+     *
+     * @param activeGamePiece The gamePiece that was moved
+     * @return The targetPathId found
+     */
+    private int findTargetPathId(GamePiece activeGamePiece) {
 
         int startPathId = 101;
         if (activeGamePiece.getCurrentPathId() != 300) {
@@ -317,14 +354,92 @@ public class GameModel {
                 if (pathCard.isOnTop()
                         && pathCard.getCardType() != CardType.WATER
                         && pathCard.getPathId() == nextPathId
-                        && pathCard.getColorSet() == selectedCard.getColorSet()) {
+                        && pathCard.getColorSet() == players.get(activePlayerId).getMovementCards().get(selectedCard).getColorSet()) {
                     found = true;
                     targetPathId = pathCard.getPathId();
                 }
             }
             nextPathId++;
         }
-        return targetPathId;
+        // If we cannot find a targetPathId on the path then the next target is the end
+        if (!found && nextPathId + 1 == 154) {
+            targetPathId = 400;
+        }
+        // Check if the targetPathIds match. If they do, set the new pathId
+        if (targetPathId != targetPathIdRemote) {
+            System.out.println("GameModel -> TargetPathIds do not match");
+            System.out.println("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
+            return 0;
+        } else {
+            System.out.println("GameModel -> TargetPathIds match");
+            System.out.println("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
+            return targetPathId;
+        }
+    }
+
+    /**
+     * Checks if the targetPathId that was found is already occupied.
+     * @param targetPathId The pathId the gamePiece should be moved to
+     * @param activeGamePiece The gamePiece that was moved
+     * @return True if the target is occupied, false if it is free to go to
+     */
+    private boolean checkIfOccupied(int targetPathId, GamePiece activeGamePiece) {
+        for (Player player : players) {
+            for (GamePiece gamePiece : player.getGamePieces()) {
+                if (gamePiece != activeGamePiece && gamePiece.getCurrentPathId() == targetPathId) {
+                    System.out.println("GameModel -> TargetPathId is occupied");
+                    return true;
+                }
+            }
+        }
+        System.out.println("GameModel -> TargetPathId is not occupied");
+        return false;
+    }
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Recursive method that goes trough each pathCard on the way
+     * to the target to check if there is water on the way
+     *
+     * @param currentPathId The pathId of the GamePiece to be moved
+     * @param targetPathId  The targetPathId where the GamePiece ultimately should be
+     * @return The pathId of the water tile
+     */
+    private int checkIfWaterOnTheWay(int currentPathId, int targetPathId) {
+        int startPathId = currentPathId + 1;
+
+        // If the gamePiece is on the home tile we need to check from the first actual path tile
+        if (currentPathId == 300) {
+            startPathId = 101;
+        }
+        // If our target would be the end tile we have to check up to the last path card on the way
+        int target = targetPathId;
+        if (target == 400) {
+            target = 153;
+        }
+        int count = 0;
+        // We count the cards that have the same pathId as the startPathId. If we count more than one
+        // card it must be an exposed water tile.
+        if (startPathId < target) {
+            for (Card pathCard : pathCards) {
+                if (pathCard.getPathId() == startPathId) {
+                    count++;
+                }
+            }
+            // Recursive call in case we find more than one card on that pathId.
+            if (count != 1) {
+                System.out.println("GameModel - > There are " + count + " cards at " + startPathId);
+                return checkIfWaterOnTheWay(startPathId, targetPathId);
+            }
+        }
+        // If by the time we get to the target path and have not found any water tiles we return 0
+        if (startPathId == targetPathId) {
+            System.out.println("No water found to the target");
+            return 0;
+        }
+        System.out.println("Water on PathId: " + startPathId);
+        return startPathId;
     }
 
     /**
@@ -344,7 +459,7 @@ public class GameModel {
 
         for (Card pathCard : pathCards) {
 
-            if (pathIdBehind >= 101 && pathIdAfter <= 154) {
+            if (pathIdBehind >= 101 && pathIdAfter <= 153) {
 
                 if (pathCard.getCardType() != CardType.WATER) {
 
@@ -365,10 +480,86 @@ public class GameModel {
             }
         }
         if (valueBehind > valueAfter) {
+            System.out.println("GameModel -> Price to cross: " + valueAfter);
             return valueAfter;
         } else {
+            System.out.println("GameModel -> Price to cross: " + valueBehind);
             return valueBehind;
         }
+    }
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Removes the pathCard at the index behind the targetPathId. In case that there is water behind, the mehtod
+     * will keep searching for the first pathCard behind the player and water.
+     *
+     * @param targetPathId The pathId from where we pick up a card behind the player
+     * @return The value of the pathCard that has been removed
+     */
+    private int removePathCardFromPath(int targetPathId) {
+        int startPathId = targetPathId - 1;
+
+        // If the gamePiece is on the first tile we return 0, as we do not pick up a card with value
+        if (targetPathId == 101) {
+            return 0;
+        }
+
+        // If our target is on the end tile we start from the tile before
+        if (targetPathId == 400) {
+            startPathId = 153;
+        }
+
+        // We remove the card behind the player and return the score. If we count less than two
+        // cards it must be an exposed water tile. Otherwise we remove the found card and in case there is
+        // another card underneath we will set it to be on top for the next time.
+        int score = 0;
+        ArrayList<Card> foundCardsAtPathId = new ArrayList<>();
+        Card cardToRemove = null;
+        Card cardToShow = null;
+
+        for (Card pathCard : pathCards) {
+            if (pathCard.getPathId() == startPathId) {
+                foundCardsAtPathId.add(pathCard);
+            }
+        }
+        // Recursive call in case we find less than two cards which means there is only water. So we continue our search
+        if (foundCardsAtPathId.size() == 1) {
+            System.out.println("GameModel - > There is only " + foundCardsAtPathId.size() + " card at " + startPathId);
+            return removePathCardFromPath(startPathId);
+        }
+
+        for (Card card : foundCardsAtPathId) {
+            if (card.getCardType() != CardType.WATER) {
+                if (card.isOnTop()) {
+                    cardToRemove = card;
+                    score = cardToRemove.getValue();
+                } else {
+                    cardToShow = card;
+                }
+            }
+        }
+
+        if (cardToRemove != null) {
+            indexOfCardToRemove = pathCards.indexOf(cardToRemove);
+            pathCards.get(indexOfCardToRemove).setPathId(-1);
+        }
+        if (cardToShow != null) {
+            indexOfCardToShow = pathCards.indexOf(cardToShow);
+            pathCards.get(indexOfCardToShow).setIsOnTop(true);
+        }
+        System.out.println("GameModel -> Score from PathId: " + score);
+        return score;
+    }
+
+    private void addCardFromDeckToPlayer() {
+        if (deck.size() == 0){
+            deck = discardedCards;
+            Collections.shuffle(deck);
+        }
+
+        players.get(activePlayerId).getMovementCards().add(deck.get(0));
+        deck.remove(0);
     }
 
     /**
@@ -411,7 +602,7 @@ public class GameModel {
     public void readGameStateMap(HashMap<String, Object> gameStateMap) {
         currentTurnRemote = (int) gameStateMap.get("CurrentTurn");
         activePlayerId = (int) gameStateMap.get("PlayerId");
-        selectedCard = (Card) gameStateMap.get("Card");
+        selectedCard = (int) gameStateMap.get("SelectedCard");
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
         targetPathIdRemote = (int) gameStateMap.get("TargetPathId");
     }
@@ -447,9 +638,12 @@ public class GameModel {
         HashMap<String, Object> gameStateMap = new HashMap<>();
         gameStateMap.put("CurrentTurn", currentTurnLocal);
         gameStateMap.put("Players", players);
-        gameStateMap.put("CardUsed", selectedCard);
+        gameStateMap.put("SelectedCard", selectedCard);
         gameStateMap.put("GamePieceUsedIndex", selectedGamePieceIndex);
         gameStateMap.put("TargetPathId", targetPathId);
+        gameStateMap.put("IndexOfCardToRemove", indexOfCardToRemove );
+        gameStateMap.put("IndexOfCardToShow", indexOfCardToShow );
+
         return gameStateMap;
     }
 

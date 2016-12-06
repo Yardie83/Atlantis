@@ -362,7 +362,6 @@ class ClientThread extends Thread {
             // Check if the game is over and inform all the players if it is or not
             boolean isGameOver = gameManager.isGameOver(game);
             sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
-            System.out.println("GameOver: " + isGameOver);
         }
     }
 

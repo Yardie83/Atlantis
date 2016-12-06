@@ -121,6 +121,7 @@ public class GameManager {
 
     public boolean isGameOver(Game game) {
         return game.getGameController().isGameOver();
+
     }
 
     public HashMap<String, Object> writeGameState(Game game) {
