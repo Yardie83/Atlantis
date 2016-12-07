@@ -454,7 +454,7 @@ public class GameModel {
      * @return The price to cross
      */
 
-    // FIXME: 06.12.2016 : This produces a stackOverflow exception.
+
     private int getPriceForCrossing(int pathId) {
         int valueBehind = getValueFromCardBehind(pathId);
         int valueAfter = getValueFromCardAfter(pathId);
@@ -660,6 +660,7 @@ public class GameModel {
         gameStateMap.put("Players", players);
         gameStateMap.put("Tiles", tiles);
         gameStateMap.put("PathCards", pathCards);
+        gameStateMap.put("Deck", deck);
         return gameStateMap;
     }
 
