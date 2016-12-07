@@ -305,7 +305,7 @@ public class GameModel {
         players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
 
         // Remove the movement card played by the player and add it to the discarded cards list
-        Card cardToDiscard =  players.get(activePlayerId).getMovementCards().get(selectedCard);
+        Card cardToDiscard = players.get(activePlayerId).getMovementCards().get(selectedCard);
         players.get(activePlayerId).getMovementCards().remove(selectedCard);
         discardedCards.add(cardToDiscard);
         System.out.println("GameModel -> Movement card removed");
@@ -380,7 +380,8 @@ public class GameModel {
 
     /**
      * Checks if the targetPathId that was found is already occupied.
-     * @param targetPathId The pathId the gamePiece should be moved to
+     *
+     * @param targetPathId    The pathId the gamePiece should be moved to
      * @param activeGamePiece The gamePiece that was moved
      * @return True if the target is occupied, false if it is free to go to
      */
@@ -455,33 +456,8 @@ public class GameModel {
 
     // FIXME: 06.12.2016 : This produces a stackOverflow exception.
     private int getPriceForCrossing(int pathId) {
-        int pathIdBehind = pathId - 1;
-        int pathIdAfter = pathId + 1;
-        int valueBehind = 0;
-        int valueAfter = 0;
-
-        for (Card pathCard : pathCards) {
-
-            if (pathIdBehind >= 101 && pathIdAfter <= 153) {
-
-                if (pathCard.getCardType() != CardType.WATER) {
-
-                    if (pathCard.getPathId() == pathIdBehind) {
-                        valueBehind = pathCard.getValue();
-                    }
-                    if (pathCard.getPathId() == pathIdAfter) {
-                        valueAfter = pathCard.getValue();
-                    }
-                } else {
-                    if (pathCard.getPathId() == pathIdBehind) {
-                        getPriceForCrossing(pathIdBehind--);
-                    }
-                    if (pathCard.getPathId() == pathIdAfter) {
-                        getPriceForCrossing(pathIdAfter++);
-                    }
-                }
-            }
-        }
+        int valueBehind = getValueFromCardBehind(pathId);
+        int valueAfter = getValueFromCardAfter(pathId);
         if (valueBehind > valueAfter) {
             System.out.println("GameModel -> Price to cross: " + valueAfter);
             return valueAfter;
@@ -489,6 +465,46 @@ public class GameModel {
             System.out.println("GameModel -> Price to cross: " + valueBehind);
             return valueBehind;
         }
+    }
+
+    // Fabian
+    private int getValueFromCardAfter(int pathId) {
+        int valueOfCard = 0;
+        int pathIdAfter = pathId + 1;
+        ArrayList<Card> tempList = new ArrayList<>();
+
+        if (pathIdAfter < 154) {
+            for (Card pathCard : pathCards) {
+                if (pathCard.getPathId() == pathIdAfter) {
+                    tempList.add(pathCard);
+                }
+            }
+            if (tempList.size() > 1) {
+                for (Card pathCard : tempList) {
+                    if (pathCard.getCardType() != CardType.WATER && pathCard.isOnTop()) {
+                        valueOfCard = pathCard.getValue();
+                    }
+                }
+            } else {
+                getValueFromCardAfter(pathIdAfter);
+            }
+        }
+
+        return valueOfCard;
+    }
+
+    // Fabian
+    private int getValueFromCardBehind(int pathId) {
+        int pathIdBehind = pathId - 1;
+        int valueOfCardBehind = 0;
+        for (Card pathCard : pathCards) {
+            if (pathCard.getPathId() == pathIdBehind) {
+                if (pathCard.getCardType() != CardType.WATER && pathCard.isOnTop()) {
+                    valueOfCardBehind = pathCard.getValue();
+                }
+            }
+        }
+        return valueOfCardBehind;
     }
 
     /**
@@ -556,7 +572,7 @@ public class GameModel {
     }
 
     private void addCardFromDeckToPlayer() {
-        if (deck.size() == 0){
+        if (deck.size() == 0) {
             deck = discardedCards;
             Collections.shuffle(deck);
         }
@@ -645,8 +661,8 @@ public class GameModel {
         gameStateMap.put("SelectedCard", selectedCard);
         gameStateMap.put("GamePieceUsedIndex", selectedGamePieceIndex);
         gameStateMap.put("TargetPathId", targetPathId);
-        gameStateMap.put("IndexOfCardToRemove", indexOfCardToRemove );
-        gameStateMap.put("IndexOfCardToShow", indexOfCardToShow );
+        gameStateMap.put("IndexOfCardToRemove", indexOfCardToRemove);
+        gameStateMap.put("IndexOfCardToShow", indexOfCardToShow);
         gameStateMap.put("DeckCard", newCardFromDeck);
 
         return gameStateMap;
