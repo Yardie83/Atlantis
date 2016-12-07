@@ -467,9 +467,19 @@ public class GameModel {
         }
     }
 
-    // Fabian
+    /** Fabian
+     *  <br>
+     *  Since we found the first water card on the way to the target card it might be that on the following
+     *  card it has more water cards and this method is checking if there is on the next pathId more than one card
+     *  if so we want to get the one at the top which is cardtype NOT water and is on top. If we get only one card
+     *  on the pathId we recall the method (recursive) in order to iterate through the follwing cards until we get
+     *  a "normal" path card.
+     *
+     * @param pathId
+     * @return valueOfCardAfter
+     */
     private int getValueFromCardAfter(int pathId) {
-        int valueOfCard = 0;
+        int valueOfCardAfter = 0;
         int pathIdAfter = pathId + 1;
         ArrayList<Card> tempList = new ArrayList<>();
 
@@ -482,7 +492,7 @@ public class GameModel {
             if (tempList.size() > 1) {
                 for (Card pathCard : tempList) {
                     if (pathCard.getCardType() != CardType.WATER && pathCard.isOnTop()) {
-                        valueOfCard = pathCard.getValue();
+                        valueOfCardAfter = pathCard.getValue();
                     }
                 }
             } else {
@@ -490,10 +500,17 @@ public class GameModel {
             }
         }
 
-        return valueOfCard;
+        return valueOfCardAfter;
     }
 
-    // Fabian
+    /** Fabian
+     *  <br>
+     *  In the method ifWaterOnTheWay we check already each path card until we get to the first water card
+     *  therefore it is not necessary to iterate backwards until we find the next "normal" card - so just getting
+     *  the value of the card behind is enough for calculating the price for passing
+     *  @param pathId
+     *  @return valueOfCardBehind
+     */
     private int getValueFromCardBehind(int pathId) {
         int pathIdBehind = pathId - 1;
         int valueOfCardBehind = 0;
