@@ -1,9 +1,6 @@
 package ch.atlantis.game;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -136,8 +133,11 @@ public class GameModel {
      * Author: Hermann Grieder
      */
     private void readLayout() {
+        File folder = new File("src/ch/atlantis/res");
+        int numberOfLayouts;
+        numberOfLayouts = folder.listFiles().length;
         Random rand = new Random();
-        int layoutId = rand.nextInt(2);
+        int layoutId = rand.nextInt(numberOfLayouts);
         System.out.println(layoutId);
         try {
             BufferedReader bf = new BufferedReader(new FileReader("src/ch/atlantis/res/Layout_" + String.valueOf(layoutId) + ".txt"));
