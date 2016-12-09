@@ -10,11 +10,15 @@ import java.io.Serializable;
 public class GamePiece extends Rectangle implements Serializable {
 
     private static final long serialVersionUID = 7661939850705259125L;
+    private int startPathId;
     private int currentPathId;
+    private int targetPathId;
 
 
     public GamePiece() {
+
         currentPathId = 300;
+        startPathId = currentPathId;
     }
 
     public void setCurrentPathId(int currentPathId) { this.currentPathId = currentPathId; }

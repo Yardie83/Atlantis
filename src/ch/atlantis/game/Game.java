@@ -25,32 +25,12 @@ public class Game {
         this.numberOfPlayers = numberOfPlayers;
     }
 
-    public HashMap<String, Object> init() {
-        return gameModel.init();
-    }
-
     public void addPlayer(Player player) {
         gameModel.addPlayer(player);
     }
 
     public void removePlayer(Player player) {
         gameModel.remove(player);
-    }
-
-    public GameController getGameController() {
-        return gameController;
-    }
-
-    public String getGameName() {
-        return gameName;
-    }
-
-    public ArrayList<Player> getPlayers() {
-        return gameModel.getPlayers();
-    }
-
-    public int getNumberOfPlayers() {
-        return numberOfPlayers;
     }
 
     public boolean isReady() {
@@ -60,6 +40,29 @@ public class Game {
     public void setReady(boolean ready) {
         isReady = ready;
     }
+
+    public int getNumberOfPlayers() {
+        return numberOfPlayers;
+    }
+
+    public String getGameName() {
+        return gameName;
+    }
+
+    public HashMap<String, Object> init() {
+        return gameModel.finalizeGame();
+    }
+
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public ArrayList<Player> getPlayers() {
+        return gameModel.getPlayers();
+    }
+
+
+
 
 }
 

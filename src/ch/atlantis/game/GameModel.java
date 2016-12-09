@@ -6,14 +6,18 @@ import java.util.*;
 
 /**
  * Created by Hermann Grieder on 28.10.2016.
+ *
+ *
  */
 public class GameModel {
 
     private ArrayList<Player> players;
     private ArrayList<Tile> tiles;
-    private final ArrayList<Card> pathCards;
+    private ArrayList<Card> pathCards;
+    private ArrayList<Card> discardedCards;
     private ArrayList<Card> movementCards;
     private ArrayList<Card> deck;
+    private Card newCardFromDeck;
     private int currentTurnLocal;
     private int currentTurnRemote;
     private int selectedCard;
@@ -21,52 +25,62 @@ public class GameModel {
     private int activePlayerId;
     private int targetPathIdRemote;
     private int targetPathId;
-    private ArrayList<Card> discardedCards;
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
-    private Card newCardFromDeck;
 
     public GameModel() {
+        initGame();
+    }
 
+    // *************************  PRE-GAME METHODS ***************************************//
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Starts the initialisation of the needed game components for the game.
+     */
+    private void initGame() {
         players = new ArrayList<>();
-        tiles = new ArrayList<>();
-        currentTurnLocal = 0;
-
-        ArrayList<Card> pathCardsSetA = new ArrayList<>();
-        createPathCards(pathCardsSetA);
-        cleanCardSetA(pathCardsSetA);
-        Collections.shuffle(pathCardsSetA);
-
-        ArrayList<Card> pathCardsSetB = new ArrayList<>();
-        createPathCards(pathCardsSetB);
-        cleanCardSetB(pathCardsSetB);
-        Collections.shuffle(pathCardsSetB);
-
-        movementCards = new ArrayList<>();
-        createMovementCards();
-        Collections.shuffle(movementCards);
-
         deck = new ArrayList<>();
         discardedCards = new ArrayList<>();
 
-        readLayout();
-        pathCards = new ArrayList<>();
-        placeCards(pathCardsSetA, pathCardsSetB);
+        ArrayList<Card> pathCardsSetA = createPathCards();
+        cleanCardSetA(pathCardsSetA);
+        Collections.shuffle(pathCardsSetA);
 
+        ArrayList<Card> pathCardsSetB = createPathCards();
+        cleanCardSetB(pathCardsSetB);
+        Collections.shuffle(pathCardsSetB);
+
+        movementCards = createMovementCards();
+        Collections.shuffle(movementCards);
+
+        readLayout();
+
+        placeCards(pathCardsSetA, pathCardsSetB);
     }
 
-    private void createMovementCards() {
+    /**
+     * Hermann Grieder
+     * <br>
+     * Create 105 movement cards with their value and CardType.MOVEMENT
+     * @return
+     */
+    private ArrayList<Card> createMovementCards() {
+        movementCards = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 15; j++) {
-                this.movementCards.add(new Card(i, CardType.MOVEMENT));
+                movementCards.add(new Card(i, CardType.MOVEMENT));
             }
         }
+        return movementCards;
     }
 
     /**
      * Fabian Witschi
      * <br>
-     * Cleans the Path Card Set A.
+     * "Cleans" the Path Card Set A. We remove certain cards that are not in the game.
+     * The cards to be removed are different in cardSetA than in cardSetB
      *
      * @param pathCardsSetA
      */
@@ -93,7 +107,8 @@ public class GameModel {
     /**
      * Fabian Witschi
      * <br>
-     * Cleans the Path Card Set B.
+     * "Cleans" the Path Card Set B. We remove certain cards that are not in the game.
+     * The cards to be removed are different in cardSetA than in cardSetB
      *
      * @param pathCardsSetB
      */
@@ -117,20 +132,21 @@ public class GameModel {
         }
     }
 
-    private void createPathCards(ArrayList<Card> pathCardsSet) {
+    private ArrayList<Card> createPathCards() {
+        ArrayList<Card> pathCardsSet = new ArrayList<>();
         for (int j = 0; j < 7; j++) {
             for (int k = 1; k <= 7; k++) {
                 pathCardsSet.add(new Card(j, k, CardType.PATH));
             }
         }
+        return pathCardsSet;
     }
 
     /**
      * Hermann Grieder
      * <br>
-     * Reads a random layout file and transfers the values into the values array
+     * Reads a random layout file and creates the correspondent tiles from it
      * <p>
-     * Author: Hermann Grieder
      */
     private void readLayout() {
         File folder = new File("src/ch/atlantis/res");
@@ -139,6 +155,7 @@ public class GameModel {
         Random rand = new Random();
         int layoutId = rand.nextInt(numberOfLayouts);
         System.out.println(layoutId);
+        tiles = new ArrayList<>();
         try {
             BufferedReader bf = new BufferedReader(new FileReader("src/ch/atlantis/res/Layout_" + String.valueOf(layoutId) + ".txt"));
 
@@ -165,8 +182,15 @@ public class GameModel {
         }
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     *
+     * @param pathCardsSetA
+     * @param pathCardsSetB
+     */
     private void placeCards(ArrayList<Card> pathCardsSetA, ArrayList<Card> pathCardsSetB) {
-
+        pathCards = new ArrayList<>();
         Iterator<Card> iteratorA = pathCardsSetA.iterator();
         Iterator<Card> iteratorB = pathCardsSetB.iterator();
 
@@ -212,18 +236,40 @@ public class GameModel {
         }
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     *
+     * @param colorSet
+     * @param cardType
+     * @param tile
+     */
     private void placeSpecialCard(int colorSet, CardType cardType, Tile tile) {
         Card card = new Card(colorSet, cardType);
         card.setIsOnTop(true);
         setIdAndAddCard(card, tile);
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     *
+     * @param iterator
+     * @param tile
+     */
     private void placeOneCard(Iterator<Card> iterator, Tile tile) {
         Card card = iterator.next();
         card.setIsOnTop(true);
         setIdAndAddCard(card, tile);
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     *
+     * @param iterator
+     * @param tile
+     */
     private void placeTwoCards(Iterator<Card> iterator, Tile tile) {
         Card card;
         for (int i = 0; i < 2; i++) {
@@ -249,6 +295,66 @@ public class GameModel {
         card.setPathId(tile.getPathId());
         pathCards.add(card);
     }
+
+    // *************************  START GAME METHODS ************************************//
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Finalizes the game once the game has been started by the player and returns a HashMap with
+     * the needed information to show the game in the client. Since the game object is created
+     * before all the players are known we have to do this additional step here to add their
+     * individual movementCards.
+     *
+     * @return The initial game state HashMap
+     */
+    public HashMap<String, Object> finalizeGame() {
+        addMovementCardsToPlayers(movementCards);
+        return writeInitialGameStateMap();
+    }
+
+    /**
+     * Fabian Witschi
+     * <p>
+     * Gives each player their initial movement cards. Player 1 gets 4, Player 2 gets 5 etc.
+     *
+     * @param movementCards ArrayList of all the movement cards
+     */
+    private void addMovementCardsToPlayers(ArrayList<Card> movementCards) {
+
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            for (int k = 0; k < 4 + i; k++) {
+                player.addMovementCard(movementCards.get(0));
+                movementCards.remove(0);
+            }
+        }
+        // The rest of the cards go into the deck
+        deck = movementCards;
+    }
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Writes the initial Game State Map. Which holds different information than
+     * what is needed during the actual gameplay.
+     *
+     * @return HashMap
+     */
+    @SuppressWarnings("unchecked")
+    public HashMap<String, Object> writeInitialGameStateMap() {
+
+        HashMap<String, Object> gameStateMap = new HashMap<>();
+        gameStateMap.put("CurrentTurn", currentTurnLocal);
+        gameStateMap.put("Players", players);
+        gameStateMap.put("Tiles", tiles);
+        gameStateMap.put("PathCards", pathCards);
+        gameStateMap.put("Deck", deck);
+        return gameStateMap;
+    }
+
+
+    // ****************************  IN-GAME METHODS ************************************//
 
     /**
      * Hermann Grieder
@@ -379,6 +485,8 @@ public class GameModel {
     }
 
     /**
+     * Hermann Grieder
+     * <br>
      * Checks if the targetPathId that was found is already occupied.
      *
      * @param targetPathId    The pathId the gamePiece should be moved to
@@ -453,8 +561,6 @@ public class GameModel {
      * @param pathId The current pathId of the gamePiece that was moved there
      * @return The price to cross
      */
-
-
     private int getPriceForCrossing(int pathId) {
         int valueBehind = getValueFromCardBehind(pathId);
         int valueAfter = getValueFromCardAfter(pathId);
@@ -467,7 +573,7 @@ public class GameModel {
         }
     }
 
-    /** Fabian
+    /** Fabian Witschi
      *  <br>
      *  Since we found the first water card on the way to the target card it might be that on the following
      *  card it has more water cards and this method is checking if there is on the next pathId more than one card
@@ -503,7 +609,7 @@ public class GameModel {
         return valueOfCardAfter;
     }
 
-    /** Fabian
+    /** Fabian WItschi
      *  <br>
      *  In the method ifWaterOnTheWay we check already each path card until we get to the first water card
      *  therefore it is not necessary to iterate backwards until we find the next "normal" card - so just getting
@@ -588,6 +694,10 @@ public class GameModel {
         return score;
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     */
     private void addCardFromDeckToPlayer() {
         if (deck.size() == 0) {
             deck = discardedCards;
@@ -597,36 +707,6 @@ public class GameModel {
         players.get(activePlayerId).getMovementCards().add(newCardFromDeck);
         System.out.println("GameModel -> Card: " + newCardFromDeck.getColorSet());
         deck.remove(0);
-    }
-
-    /**
-     * Finalizes the game. The game is created before all the players are known.
-     *
-     * @return The initial game state HashMap
-     */
-    public HashMap<String, Object> init() {
-        addMovementCardsToPlayers(movementCards);
-        return writeInitialGameStateMap();
-    }
-
-    /**
-     * Fabian Witschi
-     * <p>
-     * Gives each player their initial movement cards. Player 1 gets 4, Player 2 gets 5 etc.
-     *
-     * @param movementCards ArrayList of all the movement cards
-     */
-    private void addMovementCardsToPlayers(ArrayList<Card> movementCards) {
-
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            for (int k = 0; k < 4 + i; k++) {
-                player.addMovementCard(movementCards.get(0));
-                movementCards.remove(0);
-            }
-        }
-        // The rest of the cards go into the deck
-        deck = movementCards;
     }
 
     /**
@@ -642,26 +722,6 @@ public class GameModel {
         selectedCard = (int) gameStateMap.get("SelectedCard");
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
         targetPathIdRemote = (int) gameStateMap.get("TargetPathId");
-    }
-
-    /**
-     * Hermann Grieder
-     * <br>
-     * Writes the initial Game State Map. Which holds different information than
-     * what is needed during the actual gameplay.
-     *
-     * @return HashMap
-     */
-    @SuppressWarnings("unchecked")
-    public HashMap<String, Object> writeInitialGameStateMap() {
-
-        HashMap<String, Object> gameStateMap = new HashMap<>();
-        gameStateMap.put("CurrentTurn", currentTurnLocal);
-        gameStateMap.put("Players", players);
-        gameStateMap.put("Tiles", tiles);
-        gameStateMap.put("PathCards", pathCards);
-        gameStateMap.put("Deck", deck);
-        return gameStateMap;
     }
 
     /**
@@ -686,14 +746,27 @@ public class GameModel {
         return gameStateMap;
     }
 
+
+    /**
+     * Adds a player to the players list
+     * @param player Player object to add
+     */
     public void addPlayer(Player player) {
         players.add(player);
     }
 
+    /**
+     * Removes a player from the players list
+     * @param player Player object to remove
+     */
     public void remove(Player player) {
         players.remove(player);
     }
 
+    /**
+     * Get the players list
+     * @return ArrayList of all players
+     */
     public ArrayList<Player> getPlayers() {
         return players;
     }
