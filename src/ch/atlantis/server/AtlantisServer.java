@@ -2,11 +2,13 @@ package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
 import ch.atlantis.game.GameManager;
+import com.sun.media.jfxmedia.logging.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -46,7 +48,6 @@ public class AtlantisServer {
                 clientThreads.put(clientThread.getId(), clientSocket);
                 System.out.println("Starting Thread: " + clientThread.getId());
                 clientThread.start();
-
             } catch (IOException e) {
                 System.out.println("Server was unable to accept user connection");
             }
