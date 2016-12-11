@@ -376,6 +376,7 @@ class ClientThread extends Thread {
         for (Player player : game.getPlayers()) {
             Socket socket = playerSockets.get(player);
             outputStreams.get(socket).writeObject(message);
+            outputStreams.get(socket).flush();
         }
     }
 
