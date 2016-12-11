@@ -340,7 +340,7 @@ class ClientThread extends Thread {
      * Informs the players about the new state of the game. Checks if the game is over and
      * informs every player after each turn if it is or not.
      * <p>
-     * Fabian Witschi
+     * Hermann Grieder
      *
      * @param message The incoming message
      * @throws IOException If the message could not be sent

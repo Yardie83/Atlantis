@@ -15,6 +15,7 @@ public class Player implements Serializable {
     private int playerID;
     private int bridge;
     private int score;
+    private int gamePiecesOnLand;
 
     public Player(String playerName, int playerID, String gameName) {
         this.playerName = playerName;
@@ -77,5 +78,9 @@ public class Player implements Serializable {
     public String getGameName() {
         return gameName;
     }
+
+    public int getGamePiecesOnLand() { return gamePiecesOnLand; }
+
+    public void setGamePiecesOnLand(int gamePiecesOnLand) { this.gamePiecesOnLand = gamePiecesOnLand; }
 }
 

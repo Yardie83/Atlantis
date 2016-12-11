@@ -1,6 +1,7 @@
 package ch.atlantis.game;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -362,16 +363,67 @@ public class GameModel {
      * @return True if the game is over
      */
     public boolean isGameOver() {
-        boolean gameOver = true;
+        int countA = 0;
+        int countB = 0;
+        int countC = 0;
+        int countD = 0;
+        boolean isGameOver;
+
         for (Player player : players) {
             for (GamePiece gamePiece : player.getGamePieces()) {
-                if (gamePiece.getCurrentPathId() != 400) {
-                    gameOver = false;
+                switch (player.getPlayerID()) {
+                    case 0:
+                        if (gamePiece.isOnLand()) {
+                            countA++;
+                        }
+                        break;
+                    case 1:
+                        if (gamePiece.isOnLand()) {
+                            countB++;
+                        }
+                        break;
+                    case 2:
+                        if (gamePiece.isOnLand()) {
+                            countC++;
+                        }
+                        break;
+                    case 3:
+                        if (gamePiece.isOnLand()) {
+                            countD++;
+                        }
+                        break;
                 }
             }
         }
-        System.out.println("GameModel -> GameOver: " + gameOver);
-        return gameOver;
+        isGameOver = calculateGamePiecesOnLand(countA, countB, countC, countD);
+        return isGameOver;
+    }
+    private boolean calculateGamePiecesOnLand(int countA, int countB, int countC, int countD) {
+        if (countA == 3 || countB == 3 || countC == 3 || countD == 3) {
+            return true;
+        } else {
+            for (Player player : players) {
+                switch (player.getPlayerID()) {
+                    case 0:
+                        player.setGamePiecesOnLand(countA);
+                        System.out.println("PlayerID 0 has " + countA + " on land");
+                        break;
+                    case 1:
+                        player.setGamePiecesOnLand(countB);
+                        System.out.println("PlayerID 1 has " + countB + " on land");
+                        break;
+                    case 2:
+                        player.setGamePiecesOnLand(countC);
+                        System.out.println("PlayerID 2 has " + countC + " on land");
+                        break;
+                    case 3:
+                        player.setGamePiecesOnLand(countD);
+                        System.out.println("PlayerID 3 has " + countD + " on land");
+                        break;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean handleMove() {
