@@ -448,7 +448,16 @@ public class GameModel {
 
         // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
         // that has reached the end, one additional card
-        addCardFromDeckToPlayer();
+        // This part is checking for each player which one is playing at this moment - if found, it will give
+        // the player as much cards as are allowed regarding the rules -> 0 gamepieces on land = 1 card
+        // 1 gamepiece on land = 2 cards and 2 gamepieces on land = 3 cards.
+        for (Player player : players) {
+            if (player.getPlayerID() == activePlayerId) {
+                for (int i = 0; i <= player.getGamePiecesOnLand(); i++) {
+                    addCardFromDeckToPlayer();
+                }
+            }
+        }
         System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
 
         System.out.println("GameModel -> Score of " + scoreToAdd + " added to " + players.get(activePlayerId).getPlayerName());
