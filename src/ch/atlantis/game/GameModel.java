@@ -398,6 +398,7 @@ public class GameModel {
         isGameOver = calculateGamePiecesOnLand(countA, countB, countC, countD);
         return isGameOver;
     }
+
     private boolean calculateGamePiecesOnLand(int countA, int countB, int countC, int countD) {
         if (countA == 3 || countB == 3 || countC == 3 || countD == 3) {
             return true;
@@ -476,10 +477,12 @@ public class GameModel {
             Card cardToDiscard = players.get(activePlayerId).getMovementCards().get(index);
             discardedCards.add(cardToDiscard);
             System.out.println("GameModel-> Card added to discard pile");
-            System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
-            System.out.println("GameModel -> Movement card removed: " + players.get(activePlayerId).getMovementCards().remove(cardToDiscard));
-            System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
         }
+        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
+        for (Card card : discardedCards) {
+            System.out.println("GameModel -> Movement card removed: " + players.get(activePlayerId).getMovementCards().remove(card));
+        }
+        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
 
         // Pick up the card behind the gamePiece
         int scoreToAdd = removePathCardFromPath(targetPathId);
@@ -541,7 +544,7 @@ public class GameModel {
             nextPathId++;
         }
         // If we cannot find a targetPathId on the path then the next target is the end
-        if (!found && nextPathId + 1 == 154) {
+        if (!found && nextPathId == 154) {
             targetPathId = 400;
         }
         // Check if the targetPathIds match. If they do, set the new pathId
@@ -833,6 +836,7 @@ public class GameModel {
         HashMap<String, Object> gameStateMap = new HashMap<>();
         gameStateMap.put("CurrentTurn", currentTurnLocal);
         gameStateMap.put("Players", players);
+        gameStateMap.put("Score", players.get(activePlayerId).getScore());
         gameStateMap.put("GamePieceUsedIndex", selectedGamePieceIndex);
         gameStateMap.put("TargetPathId", targetPathId);
         gameStateMap.put("IndexOfCardToRemove", indexOfCardToRemove);
