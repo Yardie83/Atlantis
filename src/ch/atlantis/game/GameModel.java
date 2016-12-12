@@ -510,6 +510,7 @@ public class GameModel {
             }
             nextPathId++;
         }
+
         // If we cannot find a targetPathId on the path then the next target is the end
         if (!found && nextPathId == 154) {
             targetPathId = 400;
