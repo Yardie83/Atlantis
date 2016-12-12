@@ -21,13 +21,7 @@ public class GamePiece extends Rectangle implements Serializable {
         startPathId = currentPathId;
     }
 
-    public boolean isOnLand() {
-        if (currentPathId == 400) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    public boolean isOnLand() { return currentPathId == 400; }
 
     public void setCurrentPathId(int currentPathId) { this.currentPathId = currentPathId; }
 

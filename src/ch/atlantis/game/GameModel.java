@@ -356,75 +356,33 @@ public class GameModel {
     // ****************************  IN-GAME METHODS ************************************//
 
     /**
-     * Hermann Grieder
+     * Fabian Witschi
      * <br>
      * Checks if the game is over by checking if there are still gamePieces on the way to the end
      *
      * @return True if the game is over
      */
     public boolean isGameOver() {
-        int countA = 0;
-        int countB = 0;
-        int countC = 0;
-        int countD = 0;
-        boolean isGameOver;
+        int count = 0;
+        boolean isGameOver = true;
 
         for (Player player : players) {
             for (GamePiece gamePiece : player.getGamePieces()) {
-                switch (player.getPlayerID()) {
-                    case 0:
-                        if (gamePiece.isOnLand()) {
-                            countA++;
-                        }
-                        break;
-                    case 1:
-                        if (gamePiece.isOnLand()) {
-                            countB++;
-                        }
-                        break;
-                    case 2:
-                        if (gamePiece.isOnLand()) {
-                            countC++;
-                        }
-                        break;
-                    case 3:
-                        if (gamePiece.isOnLand()) {
-                            countD++;
-                        }
-                        break;
+                if (gamePiece.isOnLand()) {
+                    count++;
                 }
             }
+            if (count == 3) {
+                player.setGamePiecesOnLand(count);
+                System.out.println("Player with ID " + player.getPlayerID() + " has ended game first!");
+                isGameOver = true;
+            } else {
+                player.setGamePiecesOnLand(count);
+                System.out.println("Player with ID " + player.getPlayerID() + " has " + count + " gamepieces on land");
+                isGameOver = false;
+            }
         }
-        isGameOver = calculateGamePiecesOnLand(countA, countB, countC, countD);
         return isGameOver;
-    }
-
-    private boolean calculateGamePiecesOnLand(int countA, int countB, int countC, int countD) {
-        if (countA == 3 || countB == 3 || countC == 3 || countD == 3) {
-            return true;
-        } else {
-            for (Player player : players) {
-                switch (player.getPlayerID()) {
-                    case 0:
-                        player.setGamePiecesOnLand(countA);
-                        System.out.println("PlayerID 0 has " + countA + " on land");
-                        break;
-                    case 1:
-                        player.setGamePiecesOnLand(countB);
-                        System.out.println("PlayerID 1 has " + countB + " on land");
-                        break;
-                    case 2:
-                        player.setGamePiecesOnLand(countC);
-                        System.out.println("PlayerID 2 has " + countC + " on land");
-                        break;
-                    case 3:
-                        player.setGamePiecesOnLand(countD);
-                        System.out.println("PlayerID 3 has " + countD + " on land");
-                        break;
-                }
-            }
-        }
-        return false;
     }
 
     public boolean handleMove() {
@@ -492,7 +450,16 @@ public class GameModel {
 
         // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
         // that has reached the end, one additional card
-        addCardFromDeckToPlayer();
+        // This part is checking for each player which one is playing at this moment - if found, it will give
+        // the player as much cards as are allowed regarding the rules -> 0 gamepieces on land = 1 card
+        // 1 gamepiece on land = 2 cards and 2 gamepieces on land = 3 cards.
+        for (Player player : players) {
+            if (player.getPlayerID() == activePlayerId) {
+                for (int i = 0; i <= player.getGamePiecesOnLand(); i++) {
+                    addCardFromDeckToPlayer();
+                }
+            }
+        }
         System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
 
         System.out.println("GameModel -> Score of " + scoreToAdd + " added to " + players.get(activePlayerId).getPlayerName());
@@ -644,7 +611,9 @@ public class GameModel {
      */
     private int getPriceForCrossing(int pathId) {
         int valueBehind = getValueFromCardBehind(pathId);
+        System.out.println("PRICE (BEHIND) -> " + valueBehind);
         int valueAfter = getValueFromCardAfter(pathId);
+        System.out.println("PRICE (After) -> " + valueAfter);
         if (valueBehind > valueAfter) {
             System.out.println("GameModel -> Price to cross: " + valueAfter);
             return valueAfter;
@@ -667,8 +636,8 @@ public class GameModel {
      * @return valueOfCardAfter
      */
     private int getValueFromCardAfter(int pathId) {
-        int valueOfCardAfter = 0;
         int pathIdAfter = pathId + 1;
+        int valueAfter = 0;
         ArrayList<Card> tempList = new ArrayList<>();
 
         if (pathIdAfter < 154) {
@@ -680,15 +649,14 @@ public class GameModel {
             if (tempList.size() > 1) {
                 for (Card pathCard : tempList) {
                     if (pathCard.getCardType() != CardType.WATER && pathCard.isOnTop()) {
-                        valueOfCardAfter = pathCard.getValue();
+                        valueAfter = pathCard.getValue();
                     }
                 }
             } else {
-                getValueFromCardAfter(pathIdAfter);
+                valueAfter = getValueFromCardAfter(pathIdAfter);
             }
         }
-
-        return valueOfCardAfter;
+        return valueAfter;
     }
 
     /**
@@ -703,15 +671,15 @@ public class GameModel {
      */
     private int getValueFromCardBehind(int pathId) {
         int pathIdBehind = pathId - 1;
-        int valueOfCardBehind = 0;
         for (Card pathCard : pathCards) {
             if (pathCard.getPathId() == pathIdBehind) {
                 if (pathCard.getCardType() != CardType.WATER && pathCard.isOnTop()) {
-                    valueOfCardBehind = pathCard.getValue();
+                    System.out.println("Card Behind -> " + pathCard.getValue());
+                    return pathCard.getValue();
                 }
             }
         }
-        return valueOfCardBehind;
+        return -1;
     }
 
     /**
