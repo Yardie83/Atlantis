@@ -1,7 +1,6 @@
 package ch.atlantis.game;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -18,6 +17,7 @@ public class GameModel {
     private ArrayList<Card> movementCards;
     private ArrayList<Card> deck;
     private Card newCardFromDeck;
+    private ArrayList<Card> deckCardsToAdd;
     private int currentTurnLocal;
     private int currentTurnRemote;
     private int selectedGamePieceIndex;
@@ -25,6 +25,7 @@ public class GameModel {
     private int targetPathId;
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
+    private ArrayList<Integer> paidCardsIndex;
 
     public GameModel() {
         initGame();
@@ -363,10 +364,10 @@ public class GameModel {
      * @return True if the game is over
      */
     public boolean isGameOver() {
-        int count = 0;
         boolean isGameOver = true;
 
         for (Player player : players) {
+            int count = 0;
             for (GamePiece gamePiece : player.getGamePieces()) {
                 if (gamePiece.isOnLand()) {
                     count++;
@@ -415,8 +416,17 @@ public class GameModel {
             if (waterOnTheWayPathId != 0) {
                 priceToCrossWater = getPriceForCrossing(waterOnTheWayPathId);
                 System.out.println("Price to cross water: " + priceToCrossWater);
+                boolean found = false;
+                int pricePaidByPlayer = 0;
+                Player activePlayer = players.get(activePlayerId);
+                if (activePlayer.getPathCardStack().get(paidCardsIndex.get(i)).getValue() == priceToCrossWater) {
+                    pricePaidByPlayer = priceToCrossWater;
+                    activePlayer.subtractScore(pricePaidByPlayer);
+                    activePlayer.getPathCardStack().remove(paidCardsIndex.get(i));
+                }
                 //TODO: if there is water
                 //return false;
+
             }
 
             // Check if the target pathId is already occupied by someone else
@@ -453,6 +463,7 @@ public class GameModel {
         // This part is checking for each player which one is playing at this moment - if found, it will give
         // the player as much cards as are allowed regarding the rules -> 0 gamepieces on land = 1 card
         // 1 gamepiece on land = 2 cards and 2 gamepieces on land = 3 cards.
+        this.deckCardsToAdd = new ArrayList<>();
         for (Player player : players) {
             if (player.getPlayerID() == activePlayerId) {
                 for (int i = 0; i <= player.getGamePiecesOnLand(); i++) {
@@ -739,6 +750,7 @@ public class GameModel {
                 if (card.getCardType() != CardType.WATER && card.getCardType() != CardType.START && card.getCardType() != CardType.END) {
                     if (card.isOnTop()) {
                         cardToRemove = card;
+                        players.get(activePlayerId).getPathCardStack().add(cardToRemove);
                         score = cardToRemove.getValue();
                     } else {
                         cardToShow = card;
@@ -770,6 +782,7 @@ public class GameModel {
             Collections.shuffle(deck);
         }
         newCardFromDeck = deck.get(0);
+        deckCardsToAdd.add(newCardFromDeck);
         players.get(currentTurnLocal).getMovementCards().add(newCardFromDeck);
         System.out.println("GameModel -> Card with value " + newCardFromDeck.getColorSet() + " added to the player");
         deck.remove(0);
@@ -791,6 +804,7 @@ public class GameModel {
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
         targetPathIdsRemote = (ArrayList<Integer>) gameStateMap.get("TargetPathIds");
         playedCardsIndices = (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices");
+        paidCardsIndex = (ArrayList<Integer>)  gameStateMap.get("PaidCards");
     }
 
     /**
@@ -810,7 +824,7 @@ public class GameModel {
         gameStateMap.put("TargetPathId", targetPathId);
         gameStateMap.put("IndexOfCardToRemove", indexOfCardToRemove);
         gameStateMap.put("IndexOfCardToShow", indexOfCardToShow);
-        gameStateMap.put("DeckCardToAdd", newCardFromDeck);
+        gameStateMap.put("DeckCardsToAdd", deckCardsToAdd);
         return gameStateMap;
     }
 

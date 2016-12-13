@@ -10,6 +10,7 @@ public class Player implements Serializable {
     private static final long serialVersionUID = 7661939850705259874L;
     private ArrayList<GamePiece> gamePieces;
     private ArrayList<Card> movementCards;
+    private ArrayList<Card> pathCardStack;
     private String playerName;
     private String gameName;
     private int playerID;
@@ -24,6 +25,7 @@ public class Player implements Serializable {
 
         this.movementCards = new ArrayList<>();
         this.gamePieces = new ArrayList<>(3);
+        this.pathCardStack = new ArrayList<>();
         this.bridge = 1;
         addGamePiece();
     }
@@ -82,5 +84,7 @@ public class Player implements Serializable {
     public int getGamePiecesOnLand() { return gamePiecesOnLand; }
 
     public void setGamePiecesOnLand(int gamePiecesOnLand) { this.gamePiecesOnLand = gamePiecesOnLand; }
+
+    public ArrayList<Card> getPathCardStack() { return pathCardStack; }
 }
 
