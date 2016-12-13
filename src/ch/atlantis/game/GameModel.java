@@ -539,7 +539,7 @@ public class GameModel {
     private boolean checkIfOccupied(int targetPathId, GamePiece activeGamePiece) {
         for (Player player : players) {
             for (GamePiece gamePiece : player.getGamePieces()) {
-                if (gamePiece != activeGamePiece && gamePiece.getCurrentPathId() == targetPathId) {
+                if (gamePiece != activeGamePiece && gamePiece.getCurrentPathId() == targetPathId && gamePiece.getCurrentPathId() != 400) {
                     System.out.println("GameModel -> TargetPathId is occupied");
                     return true;
                 }
