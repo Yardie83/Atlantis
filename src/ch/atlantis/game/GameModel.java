@@ -416,14 +416,16 @@ public class GameModel {
             if (waterOnTheWayPathId != 0) {
                 priceToCrossWater = getPriceForCrossing(waterOnTheWayPathId);
                 System.out.println("Price to cross water: " + priceToCrossWater);
-                Player activePlayer = players.get(activePlayerId);
-                int valuePaid = activePlayer.getPathCardStack().get(paidCardsIndex.get(i)).getValue();
-                if (valuePaid >= priceToCrossWater) {
-                    activePlayer.subtractScore(valuePaid);
-                    activePlayer.getPathCardStack().remove(paidCardsIndex.get(i));
+                if (paidCardsIndex.size() == 0) {
+                    Player activePlayer = players.get(activePlayerId);
+                    int valuePaid = activePlayer.getPathCardStack().get(paidCardsIndex.get(i)).getValue();
+                    if (valuePaid >= priceToCrossWater) {
+                        activePlayer.subtractScore(valuePaid);
+                        activePlayer.getPathCardStack().remove(paidCardsIndex.get(i));
+                    }
+                    //TODO: if there is water
+                    //return false;
                 }
-                //TODO: if there is water
-                //return false;
 
             }
 
