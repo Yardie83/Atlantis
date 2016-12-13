@@ -18,7 +18,11 @@ public class DatabaseHandler {
 
         System.out.println("Enter Constructor");
 
+        createDatabase();
         connectToDatabase();
+    }
+
+    private void createDatabase() {
     }
 
     private void connectToDatabase() {
@@ -26,12 +30,36 @@ public class DatabaseHandler {
         stmt = null;
         rs = null;
 
-        String serverInfo = "jdbc:mysql://" + "localhost" + ":" + "3306" + "/atlantisdb";
+        //localhost replaces the ip-Adress (127.0.0.1 should work as well)
+
+        String serverInfo = "jdbc:mysql://" + "localhost" + ":" + "3306" + "/";
         //String optionInfo = "?connectTimeout=5000";
         System.out.println(("Opening connection to " + serverInfo + "\n"));
+
         try {
 
             cn = DriverManager.getConnection(serverInfo, "root", "maschine1");
+
+            //Here we create the connection to the database
+            stmt = cn.createStatement();
+
+            stmt.execute("CREATE DATABASE IF NOT EXISTS codeMonkeysAtlantisDB");
+
+            stmt.execute("USE codeMonkeysAtlantisDB");
+
+            stmt.execute("CREATE TABLE IF NOT EXISTS tbl_User " +
+                    "(UserID INT NOT NULL AUTO_INCREMENT, " +
+                    "UserName VARCHAR(45) NOT NULL, " +
+                    "Password VARCHAR(45) NOT NULL, " +
+                    "CumulatedGameTime TIME NULL, " +
+                    "NumberOfGames INT NULL, " +
+                    "PRIMARY KEY (`UserID`))");
+
+            stmt.execute("INSERT INTO tbl_User (UserName, Password)" +
+                    "VALUES ('derErste', '1234')");
+
+            stmt.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -136,11 +164,5 @@ public class DatabaseHandler {
     public void enterGameTime(long gameTime, String userName) {
 
         String s = userName;
-
-
-    }
-
-    public void newGame(Message message) {
-        //TODO: Create game instance here
     }
 }
