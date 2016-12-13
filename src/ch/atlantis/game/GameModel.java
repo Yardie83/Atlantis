@@ -416,12 +416,10 @@ public class GameModel {
             if (waterOnTheWayPathId != 0) {
                 priceToCrossWater = getPriceForCrossing(waterOnTheWayPathId);
                 System.out.println("Price to cross water: " + priceToCrossWater);
-                boolean found = false;
-                int pricePaidByPlayer = 0;
                 Player activePlayer = players.get(activePlayerId);
-                if (activePlayer.getPathCardStack().get(paidCardsIndex.get(i)).getValue() == priceToCrossWater) {
-                    pricePaidByPlayer = priceToCrossWater;
-                    activePlayer.subtractScore(pricePaidByPlayer);
+                int valuePaid = activePlayer.getPathCardStack().get(paidCardsIndex.get(i)).getValue();
+                if (valuePaid >= priceToCrossWater) {
+                    activePlayer.subtractScore(valuePaid);
                     activePlayer.getPathCardStack().remove(paidCardsIndex.get(i));
                 }
                 //TODO: if there is water
@@ -805,6 +803,7 @@ public class GameModel {
         targetPathIdsRemote = (ArrayList<Integer>) gameStateMap.get("TargetPathIds");
         playedCardsIndices = (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices");
         paidCardsIndex = (ArrayList<Integer>)  gameStateMap.get("PaidCards");
+        System.out.println("SERVER --> Paid Card Index : " + paidCardsIndex == null);
     }
 
     /**
