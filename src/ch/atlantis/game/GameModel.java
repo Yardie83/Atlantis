@@ -854,5 +854,23 @@ public class GameModel {
         return players;
     }
 
+    /**
+     * Can Heval Cokyasar
+     * @param indexOfCard
+     * @return
+     */
+
+    public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
+        ArrayList<Card> purchasedCards = new ArrayList<>();
+        Player player = players.get(activePlayerId);
+        int numberOfCardsToReturn = (player.getPathCardStack().get(indexOfCard).getValue()) / 2;
+        for (int i = 0; i < numberOfCardsToReturn; i++) {
+            purchasedCards.add(deck.get(0));
+            player.getMovementCards().add(deck.get(0));
+            deck.remove(0);
+        }
+        player.getPathCardStack().remove(indexOfCard);
+        return purchasedCards;
+    }
 }
 

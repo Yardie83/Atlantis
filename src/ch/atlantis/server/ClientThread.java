@@ -227,6 +227,9 @@ class ClientThread extends Thread {
                 case MOVE:
                     this.handleMove(message);
                     break;
+                case BUYCARD:
+                    this.handleBuyCards(message);
+                    break;
             }
         } catch (IOException e) {
             System.out.println("User disconnected");
@@ -234,6 +237,23 @@ class ClientThread extends Thread {
 
         } catch (ClassNotFoundException e) {
             System.out.println("Class \"Message\" not found");
+        }
+    }
+
+    /**
+     * Can Heval Cokyasar
+     *
+     * @param message
+     * @throws IOException
+     */
+
+    private void handleBuyCards(Message message) throws IOException {
+        if (message.getMessageObject() instanceof HashMap) {
+            HashMap<String, Object> hashToBuyCards = (HashMap<String, Object>) message.getMessageObject(); // Downcast to HashMap -> (...)
+            Game game = gameManager.findGame(hashToBuyCards); // Find specific game
+            int indexOfCard = (Integer) hashToBuyCards.get("Index");
+            ArrayList<Card> arrayListOfPurchasedCards = game.getGameController().handleUserCardPurchase(indexOfCard); // Return an AL with purchased cards
+            sendMessage(new Message(MessageType.BUYCARD, arrayListOfPurchasedCards)); // Send message back to client
         }
     }
 

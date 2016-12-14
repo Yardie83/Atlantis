@@ -1,5 +1,6 @@
 package ch.atlantis.game;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -17,6 +18,18 @@ public class GameController {
     public boolean handleMove(HashMap<String, Object> gameStateMap) {
         gameModel.readGameStateMap(gameStateMap);
         return gameModel.handleMove();
+    }
+
+    /**
+     *
+     * Can Heval Cokyasar
+     *
+     *
+     * @param indexOfCard
+     * @return
+     */
+    public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
+        return gameModel.handleUserCardPurchase(indexOfCard);
     }
 
     public boolean isGameOver() {
