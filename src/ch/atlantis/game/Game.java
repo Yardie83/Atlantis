@@ -15,6 +15,7 @@ public class Game {
     private boolean isReady;
     private GameModel gameModel;
     private GameController gameController;
+    private Player host;
 
     public Game(String gameName, int numberOfPlayers) {
 
@@ -62,7 +63,12 @@ public class Game {
     }
 
 
+    public void setHost(Player host) {
+        this.host = host;
+    }
 
-
+    public Player getHost() {
+        return host;
+    }
 }
 

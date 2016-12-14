@@ -95,11 +95,24 @@ public class GameManager {
         if (gameToAddPlayerTo != null) {
             int playerID = gameToAddPlayerTo.getPlayers().size();
             Player player = new Player(currentPlayerName, playerID, gameName);
+            if(gameToAddPlayerTo.getPlayers().size() == 0){
+                gameToAddPlayerTo.setHost(player);
+            }
             gameToAddPlayerTo.addPlayer(player);
             System.out.println("Player with ID: " + playerID + " added");
             return player;
         }
         return null;
+    }
+
+    public void removePlayer(String currentPlayerName) {
+        for (HashMap.Entry<String, Game> entry : games.entrySet()) {
+            Game g = entry.getValue();
+            if(g.getHost().getPlayerName().equals(currentPlayerName)){
+                g.getPlayers().remove(0);
+                g.setHost(null);
+            }
+        }
     }
 
     public boolean handleMove(Game game, HashMap<String, Object> gameStateMap){
@@ -132,4 +145,28 @@ public class GameManager {
         String gameName = (String) gameStateMap.get("GameName");
         return games.get(gameName);
     }
+
+    public void updateGameList() {
+        // Check for empty games or games without the host and remove them from the list
+        if (games != null) {
+            Game gameToRemove = null;
+            for (HashMap.Entry<String, Game> entry : games.entrySet()) {
+                Game g = entry.getValue();
+                if (g.getPlayers().size() == 0 || g.getHost() == null) {
+                    System.out.println("Players in Game: " + g.getGameName() + ": " + g.getPlayers().size());
+                    gameToRemove = g;
+                }
+            }
+            if (gameToRemove != null) {
+                System.out.println("Number of Games: " + games.size());
+                removeGame(gameToRemove);
+                System.out.println("Number of Games: " + games.size());
+            }
+        }
+    }
+
+    public void removeGame(Game game){
+        games.remove(game.getGameName());
+    }
+
 }

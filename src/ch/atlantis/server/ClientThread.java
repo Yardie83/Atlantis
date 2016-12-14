@@ -175,34 +175,17 @@ class ClientThread extends Thread {
      * Hermann Grieder
      */
     private void sendGameList() {
-        // Check for empty games and remove them from the list
-        if (gameManager.getGames() != null) {
-            String gameToRemove = null;
-            for (HashMap.Entry<String, Game> entry : gameManager.getGames().entrySet()) {
-                Game g = entry.getValue();
-                if (g.getPlayers().size() == 0) {
-                    System.out.println("Players in Game: " + g.getGameName() + " : " + g.getPlayers().size());
-                    gameToRemove = g.getGameName();
-                }
-            }
-            if (gameToRemove != null) {
-                gameManager.getGames().remove(gameToRemove);
-            }
-        }
-        // Todo: (loris) databaseHandler getGameList....need to talk about what to do with this.
-        //databaseHandler.getGameList();
-
+        gameManager.updateGameList();
         // Send each game from the Games list in the gameManager to all the clients
-        if (gameManager.getGames().size() > 0) {
-            for (HashMap.Entry<String, Game> entry : gameManager.getGames().entrySet()) {
-                Game g = entry.getValue();
-                String nameOfGame = g.getGameName();
-                int numberOfPlayers = g.getNumberOfPlayers();
-                int currentJoinedUsers = g.getPlayers().size();
+        for (HashMap.Entry<String, Game> entry : gameManager.getGames().entrySet()) {
+            Game g = entry.getValue();
+            String nameOfGame = g.getGameName();
+            int numberOfPlayers = g.getNumberOfPlayers();
+            int currentJoinedUsers = g.getPlayers().size();
 
-                sendMessageToAllClients(MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
-                        currentJoinedUsers);
-            }
+            sendMessageToAllClients(MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
+                    currentJoinedUsers);
+            System.out.println("ClientThread -> GameList sent");
         }
     }
 
@@ -326,6 +309,7 @@ class ClientThread extends Thread {
      * After receiving the game start message, some final initialization steps need to be taken
      * in order to produce all the needed information to play the game. After initialization it send
      * the finished game state map to all the players in that game.
+     *
      * @throws IOException If the message could not be sent
      */
     private void initGame() throws IOException {
@@ -362,13 +346,18 @@ class ClientThread extends Thread {
             // Check if the game is over and inform all the players if it is or not
             boolean isGameOver = gameManager.isGameOver(game);
             sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
+            if (isGameOver) {
+                gameManager.removeGame(game);
+                sendGameList();
+            }
         }
     }
 
     /**
      * Sends a message to all players.
+     *
      * @param currentPlayer To find the game and its player to send the message to
-     * @param message Message to be sent
+     * @param message       Message to be sent
      * @throws IOException If the message could not be sent
      */
     private void sendMessageToAllPlayers(Player currentPlayer, Message message) throws IOException {
@@ -396,15 +385,16 @@ class ClientThread extends Thread {
      * @throws IOException If if was not possible to close all resources
      */
     private void handleDisconnectUser(String currentPlayerName) throws IOException {
-
+        gameManager.removePlayer(currentPlayerName);
+        sendGameList();
         server.removeThread(currentThread().getId());
 
         //End Timer
         gameTime = System.currentTimeMillis() - gameTime;
 
-        databaseHandler.enterGameTime(gameTime, this.currentPlayerName);
+        databaseHandler.enterGameTime(gameTime, currentPlayerName);
 
-        outputStreams.remove(this.outputStream);
+        outputStreams.remove(clientSocket);
         running = false;
         this.interrupt();
         inReader.close();

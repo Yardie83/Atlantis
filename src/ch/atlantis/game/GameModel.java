@@ -364,7 +364,7 @@ public class GameModel {
      * @return True if the game is over
      */
     public boolean isGameOver() {
-        boolean isGameOver = true;
+        boolean isGameOver = false;
 
         for (Player player : players) {
             int count = 0;
@@ -379,7 +379,7 @@ public class GameModel {
                 isGameOver = true;
             } else {
                 player.setGamePiecesOnLand(count);
-                System.out.println("Player with ID " + player.getPlayerID() + " has " + count + " gamepieces on land");
+                System.out.println("Player with ID " + player.getPlayerID() + " has " + count + " gamePieces on land");
                 isGameOver = false;
             }
         }
@@ -407,12 +407,11 @@ public class GameModel {
             // Find the target pathId on the server side
             targetPathId = findTargetPathId(activeGamePiece, i);
             // Check if there is water on the way to the target. Return the pathId of that water tile or 0 if not water is on the way
-            // TODO: so far we only want to check if the target is occupied. So we have to deal with this later.
             int waterOnTheWayPathId = getWaterPathId(activeGamePiece.getCurrentPathId(), targetPathId);
             System.out.println("Water Path Id: " + waterOnTheWayPathId);
 
             // If there is water on the way to the target then calculate the price to cross
-            int priceToCrossWater = 0;
+            int priceToCrossWater;
             if (waterOnTheWayPathId != 0) {
                 priceToCrossWater = getPriceForCrossing(waterOnTheWayPathId);
                 System.out.println("Price to cross water: " + priceToCrossWater);
@@ -426,15 +425,14 @@ public class GameModel {
                     //TODO: if there is water
                     //return false;
                 }
-
             }
 
             // Check if the target pathId is already occupied by someone else
             boolean targetIsOccupied = checkIfOccupied(targetPathId, activeGamePiece);
             System.out.println("GameModel -> Target occupied: " + targetIsOccupied);
-            if (!(targetIsOccupied && targetPathIdsRemote.size() > i)) {
+            if (targetIsOccupied && !(targetPathIdsRemote.size() > i)) {
                 System.out.println("No card was played to jump over another gamePiece");
-                //return false;
+                return false;
             }
             // Set the targetPathId as the currentPathId in the active gamePiece
             players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
@@ -454,15 +452,15 @@ public class GameModel {
 
         // Pick up the card behind the gamePiece
         int scoreToAdd = removePathCardFromPath(targetPathId);
-        // TODO: We need a list for the individuals score picked up by the player. So we can later pay with it.
+
         // Add the score of that card to the player
         players.get(activePlayerId).addScore(scoreToAdd);
 
         // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
         // that has reached the end, one additional card
         // This part is checking for each player which one is playing at this moment - if found, it will give
-        // the player as much cards as are allowed regarding the rules -> 0 gamepieces on land = 1 card
-        // 1 gamepiece on land = 2 cards and 2 gamepieces on land = 3 cards.
+        // the player as much cards as are allowed regarding the rules -> 0 gamePieces on land = 1 card
+        // 1 gamePiece on land = 2 cards and 2 gamePieces on land = 3 cards.
         this.deckCardsToAdd = new ArrayList<>();
         for (Player player : players) {
             if (player.getPlayerID() == activePlayerId) {
@@ -707,7 +705,7 @@ public class GameModel {
         int startPathId = targetPathId - 1;
 
         // If the gamePiece is on the first tile we return 0, as we do not pick up a card with value
-        if (targetPathId == 101) {
+        if (targetPathId == 100) {
             return 0;
         }
 
@@ -805,7 +803,6 @@ public class GameModel {
         targetPathIdsRemote = (ArrayList<Integer>) gameStateMap.get("TargetPathIds");
         playedCardsIndices = (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices");
         paidCardsIndex = (ArrayList<Integer>)  gameStateMap.get("PaidCards");
-        System.out.println("SERVER --> Paid Card Index : " + paidCardsIndex == null);
     }
 
     /**
