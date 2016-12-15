@@ -878,7 +878,7 @@ public class GameModel {
 
     public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
         ArrayList<Card> purchasedCards = new ArrayList<>();
-        Player player = players.get(activePlayerId);
+        Player player = players.get(currentTurnLocal);
         int numberOfCardsToReturn = (player.getPathCardStack().get(indexOfCard).getValue()) / 2;
         for (int i = 0; i < numberOfCardsToReturn; i++) {
             purchasedCards.add(deck.get(0));
