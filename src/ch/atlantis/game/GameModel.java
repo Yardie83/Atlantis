@@ -400,7 +400,7 @@ public class GameModel {
         }
 
         GamePiece activeGamePiece = players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex);
-
+        int priceToCrossWater = 0;
         //We repeat these following steps and check if every move made is valid. If all of them are valid we
         // accept the move and increase the turn count and can return true
         for (int i = 0; i < targetPathIdsRemote.size(); i++) {
@@ -411,20 +411,19 @@ public class GameModel {
             System.out.println("Water Path Id: " + waterOnTheWayPathId);
 
             // If there is water on the way to the target then calculate the price to cross
-            int priceToCrossWater;
             if (waterOnTheWayPathId != 0) {
-                priceToCrossWater = getPriceForCrossing(waterOnTheWayPathId);
+                priceToCrossWater += getPriceForCrossing(waterOnTheWayPathId);
                 System.out.println("Price to cross water: " + priceToCrossWater);
-                if (paidCardsIndex.size() == 0) {
-                    Player activePlayer = players.get(activePlayerId);
-                    int valuePaid = activePlayer.getPathCardStack().get(paidCardsIndex.get(i)).getValue();
-                    if (valuePaid >= priceToCrossWater) {
-                        activePlayer.subtractScore(valuePaid);
-                        activePlayer.getPathCardStack().remove(paidCardsIndex.get(i));
-                    }
-                    //TODO: if there is water
-                    //return false;
-                }
+//                if (paidCardsIndex.size() != 0) {
+//                    int valuePaid = players.get(activePlayerId).getPathCardStack().get(paidCardsIndex.get(i)).getValue();
+//                    if (valuePaid >= priceToCrossWater) {
+//                        System.out.println(valuePaid);
+//                        System.out.println( players.get(activePlayerId).getScore());
+//                        players.get(activePlayerId).subtractScore(valuePaid);
+//                        System.out.println( players.get(activePlayerId).getScore());
+//                        players.get(activePlayerId).getPathCardStack().remove(paidCardsIndex.get(i));
+//                    }
+//                }
             }
 
             // Check if the target pathId is already occupied by someone else
@@ -436,6 +435,22 @@ public class GameModel {
             }
             // Set the targetPathId as the currentPathId in the active gamePiece
             players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
+        }
+
+        if (paidCardsIndex != null && paidCardsIndex.size() != 0) {
+            int valuePaid = 0;
+            for (Integer index : paidCardsIndex) {
+                valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
+            }
+            if (valuePaid >= priceToCrossWater) {
+                System.out.println(valuePaid);
+                System.out.println(players.get(activePlayerId).getScore());
+                players.get(activePlayerId).subtractScore(valuePaid);
+                System.out.println(players.get(activePlayerId).getScore());
+                for (Integer index : paidCardsIndex) {
+                    players.get(activePlayerId).getPathCardStack().remove(index);
+                }
+            }
         }
 
         // Remove the movement card played by the player and add it to the discarded cards list
@@ -802,7 +817,7 @@ public class GameModel {
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
         targetPathIdsRemote = (ArrayList<Integer>) gameStateMap.get("TargetPathIds");
         playedCardsIndices = (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices");
-        paidCardsIndex = (ArrayList<Integer>)  gameStateMap.get("PaidCards");
+        paidCardsIndex = (ArrayList<Integer>) gameStateMap.get("PaidCards");
     }
 
     /**
@@ -856,6 +871,7 @@ public class GameModel {
 
     /**
      * Can Heval Cokyasar
+     *
      * @param indexOfCard
      * @return
      */
