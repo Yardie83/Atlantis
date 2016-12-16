@@ -13,10 +13,10 @@ public class GameModel {
     private ArrayList<Card> pathCards;
     private ArrayList<Integer> playedCardsIndices;
     private ArrayList<Integer> targetPathIdsRemote;
+    private ArrayList<Integer> paidCardsIndices;
     private ArrayList<Card> discardedCards;
     private ArrayList<Card> movementCards;
     private ArrayList<Card> deck;
-    private Card newCardFromDeck;
     private ArrayList<Card> deckCardsToAdd;
     private int currentTurnLocal;
     private int currentTurnRemote;
@@ -25,8 +25,8 @@ public class GameModel {
     private int targetPathId;
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
-    private ArrayList<Integer> paidCardsIndices;
     private int pathIdAfter;
+    private int valuePaid;
 
     public GameModel() {
         initGame();
@@ -428,7 +428,7 @@ public class GameModel {
         }
 
         if (paidCardsIndices != null && paidCardsIndices.size() != 0) {
-            int valuePaid = 0;
+            valuePaid = 0;
             for (Integer index : paidCardsIndices) {
                 valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
             }
@@ -455,11 +455,9 @@ public class GameModel {
         }
         System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
 
-        // Pick up the card behind the gamePiece
-        int scoreToAdd = removePathCardFromPath(targetPathId);
+        updatePlayerScore();
 
-        // Add the score of that card to the player
-        players.get(activePlayerId).addScore(scoreToAdd);
+
 
         // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
         // that has reached the end, one additional card
@@ -474,9 +472,6 @@ public class GameModel {
                 }
             }
         }
-        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
-
-        System.out.println("GameModel -> Score of " + scoreToAdd + " added to " + players.get(activePlayerId).getPlayerName());
 
         // Increase the turn count
         currentTurnLocal++;
@@ -485,6 +480,15 @@ public class GameModel {
         }
         System.out.println("GameModel -> PlayerTurn: " + this.currentTurnLocal);
         return true;
+    }
+
+    private void updatePlayerScore() {
+        int score;
+        int scoreToAdd = removePathCardFromPath(targetPathId);
+        int scoreToSubtract = valuePaid;
+        score = scoreToAdd - scoreToSubtract;
+        // Add the score of that card to the player
+        players.get(activePlayerId).addScore(score);
     }
 
     /**
@@ -783,7 +787,7 @@ public class GameModel {
             deck = discardedCards;
             Collections.shuffle(deck);
         }
-        newCardFromDeck = deck.get(0);
+        Card newCardFromDeck = deck.get(0);
         deckCardsToAdd.add(newCardFromDeck);
         players.get(currentTurnLocal).getMovementCards().add(newCardFromDeck);
         System.out.println("GameModel -> Card with value " + newCardFromDeck.getColorSet() + " added to the player");
