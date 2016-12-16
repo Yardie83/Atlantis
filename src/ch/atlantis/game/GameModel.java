@@ -26,6 +26,7 @@ public class GameModel {
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
     private ArrayList<Integer> paidCardsIndex;
+    private int pathIdAfter;
 
     public GameModel() {
         initGame();
@@ -400,32 +401,12 @@ public class GameModel {
         }
 
         GamePiece activeGamePiece = players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex);
-        int priceToCrossWater = 0;
+        int startPathId = activeGamePiece.getCurrentPathId();
         //We repeat these following steps and check if every move made is valid. If all of them are valid we
         // accept the move and increase the turn count and can return true
         for (int i = 0; i < targetPathIdsRemote.size(); i++) {
             // Find the target pathId on the server side
             targetPathId = findTargetPathId(activeGamePiece, i);
-            // Check if there is water on the way to the target. Return the pathId of that water tile or 0 if not water is on the way
-            int waterOnTheWayPathId = getWaterPathId(activeGamePiece.getCurrentPathId(), targetPathId);
-            System.out.println("Water Path Id: " + waterOnTheWayPathId);
-
-            // If there is water on the way to the target then calculate the price to cross
-            if (waterOnTheWayPathId != 0) {
-                priceToCrossWater += getPriceForCrossing(waterOnTheWayPathId);
-                System.out.println("Price to cross water: " + priceToCrossWater);
-//                if (paidCardsIndex.size() != 0) {
-//                    int valuePaid = players.get(activePlayerId).getPathCardStack().get(paidCardsIndex.get(i)).getValue();
-//                    if (valuePaid >= priceToCrossWater) {
-//                        System.out.println(valuePaid);
-//                        System.out.println( players.get(activePlayerId).getScore());
-//                        players.get(activePlayerId).subtractScore(valuePaid);
-//                        System.out.println( players.get(activePlayerId).getScore());
-//                        players.get(activePlayerId).getPathCardStack().remove(paidCardsIndex.get(i));
-//                    }
-//                }
-            }
-
             // Check if the target pathId is already occupied by someone else
             boolean targetIsOccupied = checkIfOccupied(targetPathId, activeGamePiece);
             System.out.println("GameModel -> Target occupied: " + targetIsOccupied);
@@ -435,6 +416,15 @@ public class GameModel {
             }
             // Set the targetPathId as the currentPathId in the active gamePiece
             players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
+        }
+
+        // Check if there is water on the way to the target. Return the pathId of that water tile or 0 if not water is on the way
+        int waterPathId = getWaterPathId(startPathId);
+        int priceToCrossWater = 0;
+        // If there is water on the way to the target then calculate the price to cross
+        while (waterPathId != 0) {
+            priceToCrossWater += getPriceForCrossing(waterPathId);
+            waterPathId = getWaterPathId(pathIdAfter);
         }
 
         if (paidCardsIndex != null && paidCardsIndex.size() != 0) {
@@ -580,10 +570,9 @@ public class GameModel {
      * to the target to check if there is water on the way
      *
      * @param currentPathId The pathId of the GamePiece to be moved
-     * @param targetPathId  The targetPathId where the GamePiece ultimately should be
      * @return The pathId of the water tile
      */
-    private int getWaterPathId(int currentPathId, int targetPathId) {
+    private int getWaterPathId(int currentPathId) {
         int startPathId = currentPathId + 1;
 
         // If the gamePiece is on the home tile we need to check from the first actual path tile
@@ -609,7 +598,7 @@ public class GameModel {
             // Recursive call in case we find more than one card on that pathId.
             if (count != 1) {
                 System.out.println("GameModel - > There are " + count + " cards at " + startPathId);
-                return getWaterPathId(startPathId, targetPathId);
+                return getWaterPathId(startPathId);
             }
         }
         // If by the time we get to the target path and have not found any water tiles we return 0
@@ -661,7 +650,7 @@ public class GameModel {
      * @return valueOfCardAfter
      */
     private int getValueFromCardAfter(int pathId) {
-        int pathIdAfter = pathId + 1;
+        pathIdAfter = pathId + 1;
         int valueAfter = 0;
         ArrayList<Card> tempList = new ArrayList<>();
 
