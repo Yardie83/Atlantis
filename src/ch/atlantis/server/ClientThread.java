@@ -360,11 +360,10 @@ class ClientThread extends Thread {
                 // The move is valid, now inform all the players of the changes.
                 HashMap<String, Object> newGameState = gameManager.writeGameState(game);
                 sendMessageToAllPlayers(currentPlayer, new Message(MessageType.MOVE, newGameState));
-            } else {
-                //TODO: do something when the move is not valid
             }
             // Check if the game is over and inform all the players if it is or not
             boolean isGameOver = gameManager.isGameOver(game);
+
             sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
             if (isGameOver) {
                 gameManager.removeGame(game);

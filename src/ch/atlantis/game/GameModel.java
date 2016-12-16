@@ -376,6 +376,7 @@ public class GameModel {
             }
             if (count == 3) {
                 player.setGamePiecesOnLand(count);
+                player.addScore(4);
                 System.out.println("Player with ID " + player.getPlayerID() + " has ended game first!");
                 isGameOver = true;
             } else {
@@ -872,9 +873,12 @@ public class GameModel {
     public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
         ArrayList<Card> purchasedCards = new ArrayList<>();
         Player player = players.get(currentTurnLocal);
-        int numberOfCardsToReturn = (player.getPathCardStack().get(indexOfCard).getValue()) / 2;
+        int valueOfCardToSell = player.getPathCardStack().get(indexOfCard).getValue();
+        int numberOfCardsToReturn = (valueOfCardToSell) / 2;
+        players.get(currentTurnLocal).subtractScore(valueOfCardToSell);
         for (int i = 0; i < numberOfCardsToReturn; i++) {
             purchasedCards.add(deck.get(0));
+            System.out.println(indexOfCard + " " + purchasedCards.size() + " " + valueOfCardToSell + " " + numberOfCardsToReturn);
             player.getMovementCards().add(deck.get(0));
             deck.remove(0);
         }
