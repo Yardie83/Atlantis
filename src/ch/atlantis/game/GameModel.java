@@ -25,7 +25,7 @@ public class GameModel {
     private int targetPathId;
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
-    private ArrayList<Integer> paidCardsIndex;
+    private ArrayList<Integer> paidCardsIndices;
     private int pathIdAfter;
 
     public GameModel() {
@@ -427,9 +427,9 @@ public class GameModel {
             waterPathId = getWaterPathId(pathIdAfter);
         }
 
-        if (paidCardsIndex != null && paidCardsIndex.size() != 0) {
+        if (paidCardsIndices != null && paidCardsIndices.size() != 0) {
             int valuePaid = 0;
-            for (Integer index : paidCardsIndex) {
+            for (Integer index : paidCardsIndices) {
                 valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
             }
             if (valuePaid >= priceToCrossWater) {
@@ -437,7 +437,7 @@ public class GameModel {
                 System.out.println(players.get(activePlayerId).getScore());
                 players.get(activePlayerId).subtractScore(valuePaid);
                 System.out.println(players.get(activePlayerId).getScore());
-                for (Integer index : paidCardsIndex) {
+                for (Integer index : paidCardsIndices) {
                     players.get(activePlayerId).getPathCardStack().remove(index);
                 }
             }
@@ -806,7 +806,7 @@ public class GameModel {
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
         targetPathIdsRemote = (ArrayList<Integer>) gameStateMap.get("TargetPathIds");
         playedCardsIndices = (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices");
-        paidCardsIndex = (ArrayList<Integer>) gameStateMap.get("PaidCards");
+        paidCardsIndices = (ArrayList<Integer>) gameStateMap.get("PaidCards");
     }
 
     /**
