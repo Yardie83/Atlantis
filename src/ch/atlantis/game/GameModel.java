@@ -382,7 +382,6 @@ public class GameModel {
             } else {
                 player.setGamePiecesOnLand(count);
                 System.out.println("Player with ID " + player.getPlayerID() + " has " + count + " gamePieces on land");
-                isGameOver = false;
             }
         }
         return isGameOver;
@@ -806,6 +805,8 @@ public class GameModel {
     public void readGameStateMap(HashMap<String, Object> gameStateMap) {
         playedCardsIndices = null;
         targetPathId = 0;
+        indexOfCardToRemove = -1;
+        indexOfCardToShow = -1;
         currentTurnRemote = (int) gameStateMap.get("CurrentTurn");
         activePlayerId = (int) gameStateMap.get("PlayerId");
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
