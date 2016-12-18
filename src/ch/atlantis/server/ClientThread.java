@@ -230,6 +230,11 @@ class ClientThread extends Thread {
                 case BUYCARD:
                     this.handleBuyCards(message);
                     break;
+                case CANTMOVE:
+                    this.handleCantMove(message);
+                    break;
+                case NEWTURN:
+                    break;
             }
         } catch (IOException e) {
             System.out.println("User disconnected");
@@ -238,6 +243,22 @@ class ClientThread extends Thread {
         } catch (ClassNotFoundException e) {
             System.out.println("Class \"Message\" not found");
         }
+    }
+
+    /**
+     * Fabian Witschi
+     *
+     * @param message
+     */
+
+    private void handleCantMove(Message message) throws IOException {
+        String gameName = (String) message.getMessageObject();
+        Game game = gameManager.getGames().get(gameName);
+        ArrayList<Card> twoCardsForNotMoving = game.getGameController().handleCantMove();
+        sendMessage(new Message(MessageType.CANTMOVE, twoCardsForNotMoving));
+        Integer currentTurnToSend = new Integer(game.getGameController().handleNewTurn());
+        Player currentPlayer = this.player;
+        sendMessageToAllPlayers(currentPlayer, new Message(MessageType.NEWTURN, currentTurnToSend));
     }
 
     /**

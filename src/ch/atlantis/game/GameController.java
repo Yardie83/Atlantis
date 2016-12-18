@@ -32,6 +32,14 @@ public class GameController {
         return gameModel.handleUserCardPurchase(indexOfCard);
     }
 
+    public ArrayList<Card> handleCantMove() {
+        return gameModel.handleCantMove();
+    }
+
+    public int handleNewTurn() {
+        return gameModel.handleNewMove();
+    }
+
     public boolean isGameOver() {
         return gameModel.isGameOver();
     }

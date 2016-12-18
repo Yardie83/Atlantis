@@ -458,7 +458,6 @@ public class GameModel {
         updatePlayerScore();
 
 
-
         // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
         // that has reached the end, one additional card
         // This part is checking for each player which one is playing at this moment - if found, it will give
@@ -879,12 +878,35 @@ public class GameModel {
         players.get(currentTurnLocal).subtractScore(valueOfCardToSell);
         for (int i = 0; i < numberOfCardsToReturn; i++) {
             purchasedCards.add(deck.get(0));
-            System.out.println(indexOfCard + " " + purchasedCards.size() + " " + valueOfCardToSell + " " + numberOfCardsToReturn);
             player.getMovementCards().add(deck.get(0));
             deck.remove(0);
         }
         player.getPathCardStack().remove(indexOfCard);
         return purchasedCards;
     }
+
+    public ArrayList<Card> handleCantMove() {
+
+        ArrayList<Card> twoCardsForNotMoving = new ArrayList<>();
+
+        Player player = players.get(currentTurnLocal);
+        for (int i = 0; i < 2; i++) {
+            twoCardsForNotMoving.add(deck.get(0));
+            player.getMovementCards().add(deck.get(0));
+            deck.remove(0);
+        }
+        return twoCardsForNotMoving;
+    }
+
+    public int handleNewMove() {
+        currentTurnRemote = currentTurnLocal;
+
+        currentTurnLocal++;
+        if (currentTurnLocal >= players.size()) {
+            currentTurnLocal = 0;
+        }
+        return currentTurnLocal;
+    }
+
 }
 
