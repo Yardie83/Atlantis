@@ -1,9 +1,11 @@
 package ch.atlantis.database;
 
+import ch.atlantis.server.AtlantisServer;
 import ch.atlantis.util.Message;
 import ch.atlantis.util.MessageType;
 
 import java.sql.*;
+import java.util.logging.Logger;
 
 /**
  * Created by Loris Grether on 05.08.2016.
@@ -15,9 +17,12 @@ public class DatabaseHandler {
     private Connection cn;
     private ResultSet rs;
 
+    private Logger logger;
+
     public DatabaseHandler() {
 
-        System.out.println("Enter Constructor");
+        logger = Logger.getLogger(AtlantisServer.AtlantisLogger);
+        logger.info("Enter constructor.");
 
         createDatabase();
         connectToDatabase();
@@ -35,7 +40,7 @@ public class DatabaseHandler {
 
         String serverInfo = "jdbc:mysql://" + "localhost" + ":" + "3306" + "/";
         //String optionInfo = "?connectTimeout=5000";
-        System.out.println(("Opening connection to " + serverInfo + "\n"));
+        logger.info("Opening connection to " + serverInfo + "\n");
 
         try {
 
@@ -77,7 +82,7 @@ public class DatabaseHandler {
 
     public boolean createProfile(Message message) {
 
-        System.out.println("createProfile");
+        logger.info("createProfile");
 
         String[] userNamePassword = message.getMessageObject().toString().split(",");
 
@@ -90,7 +95,7 @@ public class DatabaseHandler {
 
             if (checkUserEntries(userName, userPassword, message) == 0) {
 
-                System.out.println("Success creating profile");
+                logger.info("Success creating profile.");
 
                 String sql = "INSERT INTO tbl_user (UserName, Password) VALUES (?, ?)";
                 PreparedStatement statement = cn.prepareStatement(sql);
@@ -102,7 +107,7 @@ public class DatabaseHandler {
                 isSuccess = true;
             } else {
 
-                System.out.println("No success creating the user profile");
+                logger.info("No success creating the user profile.");
 
                 isSuccess = false;
             }
