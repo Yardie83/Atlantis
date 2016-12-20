@@ -678,7 +678,7 @@ public class GameModel {
                     }
                 }
             } else {
-                valueAfter = getValueFromCardAfter(pathIdAfter);
+                return getValueFromCardAfter(pathIdAfter);
             }
         }
         return valueAfter;
@@ -819,6 +819,9 @@ public class GameModel {
         selectedGamePieceIndex = (int) gameStateMap.get("GamePieceIndex");
         targetPathIdsRemote = (ArrayList<Integer>) gameStateMap.get("TargetPathIds");
         playedCardsIndices = (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices");
+        for(Integer integer : (ArrayList<Integer>) gameStateMap.get("PlayedCardsIndices") ){
+            System.out.println("Hello " + integer);
+        }
         paidCardsIndices = (ArrayList<Integer>) gameStateMap.get("PaidCards");
     }
 
