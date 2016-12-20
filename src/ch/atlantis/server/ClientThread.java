@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -184,7 +185,7 @@ class ClientThread extends Thread {
             int currentJoinedUsers = g.getPlayers().size();
 
             sendMessageToAllClients(MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
-                    currentJoinedUsers);
+                    currentJoinedUsers + "," + currentPlayerName);
             System.out.println("ClientThread -> GameList sent");
         }
     }
@@ -286,10 +287,7 @@ class ClientThread extends Thread {
         String playerName = credentials[0];
         try {
             if (databaseHandler.userLogin(message)) {
-
-                //Start Timer
-                gameTime = System.currentTimeMillis();
-
+                startGameTimer();
                 loggedIn = true;
                 sendMessage(new Message(MessageType.LOGIN, true));
                 sendPlayerName(playerName);
@@ -309,6 +307,7 @@ class ClientThread extends Thread {
         String playerName = credentials[0];
         try {
             if (databaseHandler.createProfile(message)) {
+                startGameTimer();
                 loggedIn = true;
                 sendMessage(new Message(MessageType.CREATEPROFILE, true));
                 sendPlayerName(playerName);
@@ -320,8 +319,14 @@ class ClientThread extends Thread {
         }
     }
 
+    private void startGameTimer() {
+        //Start Timer
+        gameTime = System.currentTimeMillis();
+        System.out.println("Start Game Time: " + gameTime);
+    }
+
     private void handleNewGame(Message message) throws IOException {
-        if (gameManager.handleNewGame(message)) {
+        if (gameManager.handleNewGame(message, currentPlayerName)) {
             handleJoinGame(message);
         }
     }
@@ -432,7 +437,9 @@ class ClientThread extends Thread {
         //End Timer
         gameTime = System.currentTimeMillis() - gameTime;
 
-        databaseHandler.enterGameTime(gameTime, currentPlayerName);
+        long time = TimeUnit.MILLISECONDS.toMinutes(gameTime);
+
+        databaseHandler.enterGameTime(TimeUnit.MILLISECONDS.toMinutes(gameTime), this.currentPlayerName);
 
         outputStreams.remove(clientSocket);
         running = false;

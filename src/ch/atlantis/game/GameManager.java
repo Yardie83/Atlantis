@@ -30,7 +30,7 @@ public class GameManager {
      *
      * @param message Message received from the client
      */
-    public boolean handleNewGame(Message message) throws IOException {
+    public boolean handleNewGame(Message message, String currentPlayerName) throws IOException {
 
         // Extract the information from the message
         String[] gameInformation = message.getMessageObject().toString().split(",");
