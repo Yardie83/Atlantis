@@ -670,7 +670,7 @@ public class GameModel {
                     }
                 }
             } else {
-                valueAfter = getValueFromCardAfter(pathIdAfter);
+                return getValueFromCardAfter(pathIdAfter);
             }
         }
         return valueAfter;
