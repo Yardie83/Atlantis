@@ -62,7 +62,6 @@ public class Game {
         return gameModel.getPlayers();
     }
 
-
     public void setHost(Player host) {
         this.host = host;
     }

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static ch.atlantis.server.AtlantisServer.AtlantisLogger;
@@ -193,6 +194,7 @@ class ClientThread extends Thread {
 
             sendMessageToAllClients(MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
                     currentJoinedUsers);
+            // + "," + currentPlayerName);
             logger.info("ClientThread -> GameList sent");
         }
     }
@@ -294,10 +296,7 @@ class ClientThread extends Thread {
         String playerName = credentials[0];
         try {
             if (databaseHandler.userLogin(message)) {
-
-                //Start Timer
-                gameTime = System.currentTimeMillis();
-
+                startGameTimer();
                 loggedIn = true;
                 sendMessage(new Message(MessageType.LOGIN, true));
                 sendPlayerName(playerName);
@@ -317,6 +316,7 @@ class ClientThread extends Thread {
         String playerName = credentials[0];
         try {
             if (databaseHandler.createProfile(message)) {
+                startGameTimer();
                 loggedIn = true;
                 sendMessage(new Message(MessageType.CREATEPROFILE, true));
                 sendPlayerName(playerName);
@@ -326,6 +326,12 @@ class ClientThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void startGameTimer() {
+        //Start Timer
+        gameTime = System.currentTimeMillis();
+        System.out.println("Start Game Time: " + gameTime);
     }
 
     private void handleNewGame(Message message) throws IOException {
@@ -440,7 +446,9 @@ class ClientThread extends Thread {
         //End Timer
         gameTime = System.currentTimeMillis() - gameTime;
 
-        databaseHandler.enterGameTime(gameTime, currentPlayerName);
+        long time = TimeUnit.MILLISECONDS.toMinutes(gameTime);
+
+        databaseHandler.enterGameTime(TimeUnit.MILLISECONDS.toMinutes(gameTime), this.currentPlayerName);
 
         outputStreams.remove(clientSocket);
         running = false;

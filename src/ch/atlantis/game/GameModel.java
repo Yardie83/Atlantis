@@ -436,10 +436,13 @@ public class GameModel {
         }
 
         if (paidCardsIndices != null && paidCardsIndices.size() != 0) {
+            System.out.println("Started here ---- ");
             valuePaid = 0;
             for (Integer index : paidCardsIndices) {
                 valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
             }
+            System.out.println("Started here (value paid  ----  " + valuePaid);
+            System.out.println("price to cross " + priceToCrossWater);
             if (valuePaid >= priceToCrossWater) {
                 logger.info(String.valueOf(valuePaid));
                 logger.info(String.valueOf(players.get(activePlayerId).getScore()));
@@ -490,12 +493,8 @@ public class GameModel {
     }
 
     private void updatePlayerScore() {
-        int score;
         int scoreToAdd = removePathCardFromPath(targetPathId);
-        int scoreToSubtract = valuePaid;
-        score = scoreToAdd - scoreToSubtract;
-        // Add the score of that card to the player
-        players.get(activePlayerId).addScore(score);
+        players.get(activePlayerId).addScore(scoreToAdd);
     }
 
     /**

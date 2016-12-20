@@ -44,7 +44,10 @@ public class DatabaseHandler {
 
         try {
 
-            cn = DriverManager.getConnection(serverInfo, "root", "maschine1");
+            String userName = "root";
+            String password = "maschine1";
+
+            cn = DriverManager.getConnection(serverInfo, userName, password);
 
             //Here we create the connection to the database
             stmt = cn.createStatement();
@@ -57,12 +60,9 @@ public class DatabaseHandler {
                     "(UserID INT NOT NULL AUTO_INCREMENT, " +
                     "UserName VARCHAR(45) NOT NULL, " +
                     "Password VARCHAR(45) NOT NULL, " +
-                    "CumulatedGameTime TIME NULL, " +
-                    "NumberOfGames INT NULL, " +
+                    "CumulatedGameTime INT NULL , " +
+                    "NumberOfGames INT NULL , " +
                     "PRIMARY KEY (`UserID`))");
-
-            stmt.execute("INSERT INTO tbl_User (UserName, Password)" +
-                    "VALUES ('derErste', '1234')");
 
             stmt.close();
 
@@ -97,7 +97,7 @@ public class DatabaseHandler {
 
                 logger.info("Success creating profile.");
 
-                String sql = "INSERT INTO tbl_user (UserName, Password) VALUES (?, ?)";
+                String sql = "INSERT INTO tbl_User (UserName, Password, CumulatedGameTime, NumberOfGames) VALUES (?, ?, 0, 0)";
                 PreparedStatement statement = cn.prepareStatement(sql);
                 statement.setString(1, userName);
                 statement.setString(2, userPassword);
@@ -131,6 +131,7 @@ public class DatabaseHandler {
         try {
             if (checkUserEntries(userName, userPassword, message) == 1) {
                 isValid = true;
+
             } else {
                 isValid = false;
             }
@@ -141,21 +142,27 @@ public class DatabaseHandler {
         }
     }
 
+    //This method checks the user entries in case of creating a new account as welle as logging in the game
     private int checkUserEntries(String userName, String userPassword, Message message) throws SQLException {
 
         PreparedStatement preparedStatement = null;
         rs = null;
 
-        String query = "SELECT COUNT(*) FROM tbl_user WHERE userName = ?";
+        String query = "SELECT COUNT(*) FROM tbl_User WHERE userName = ?";
 
+
+        //Here the user wants to create a new profile means we have to check the database for the new userName
+        //so there are no dublicates in the database
         if (message.getMessageType() == MessageType.CREATEPROFILE) {
 
             preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setString(1, userName);
 
+            //Here the user want to login so we have to check if the userName and the corresponding password
+            //are in the database
         } else if (message.getMessageType() == MessageType.LOGIN) {
 
-            query = "SELECT COUNT(*) FROM tbl_user WHERE userName = ? AND password = ?";
+            query = "SELECT COUNT(*) FROM tbl_User WHERE userName = ? AND password = ?";
             preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setString(1, userName);
             preparedStatement.setString(2, userPassword);
@@ -167,8 +174,31 @@ public class DatabaseHandler {
         return rs.getInt(1);
     }
 
-    public void enterGameTime(long gameTime, String userName) {
+    //This method gets called when a user leaves the game
+    public void enterGameTime(long time, String s) {
 
-        String s = userName;
+        int gameTime = (int) time + 1;
+
+        //This line adds two '' to the string
+        String userName = "'" + s + "'";
+
+        System.out.println("THE NUMBER OF MINUTES IS: " + gameTime);
+
+        try {
+
+            String sql = "UPDATE codemonkeysatlantisdb.tbl_user SET " +
+                    "codemonkeysatlantisdb.tbl_user.CumulatedGameTime = codemonkeysatlantisdb.tbl_user.CumulatedGameTime + " + gameTime +
+                    " WHERE codemonkeysatlantisdb.tbl_user.UserName = " + userName;
+
+            PreparedStatement statement = null;
+            statement = cn.prepareStatement(sql);
+            statement.execute();
+            statement.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("The player: " + userName + " wasted " + gameTime + " minutes in the game.");
     }
 }
