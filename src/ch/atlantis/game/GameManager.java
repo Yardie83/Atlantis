@@ -1,10 +1,12 @@
 package ch.atlantis.game;
 
+import ch.atlantis.server.AtlantisServer;
 import ch.atlantis.util.Message;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 /**
  * Created by Hermann Grieder on 23.08.16.
@@ -17,7 +19,12 @@ public class GameManager {
 
     private HashMap<String, Game> games;
 
+    private Logger logger;
+
     public GameManager() {
+
+        logger = Logger.getLogger(AtlantisServer.AtlantisLogger);
+
         games = new HashMap<>();
     }
 
@@ -30,7 +37,8 @@ public class GameManager {
      *
      * @param message Message received from the client
      */
-    public boolean handleNewGame(Message message, String currentPlayerName) throws IOException {
+
+    public boolean handleNewGame(Message message) throws IOException {
 
         // Extract the information from the message
         String[] gameInformation = message.getMessageObject().toString().split(",");
@@ -45,7 +53,7 @@ public class GameManager {
             // If the game does not exist, create it and add it to the list of games
             Game game = new Game(gameName, nrOfPlayers);
             games.put(gameName, game);
-            System.out.println("Game: " + gameName + " added");
+            logger.info("Game: " + gameName + " added.");
             return true;
         }
     }
@@ -60,7 +68,7 @@ public class GameManager {
     }
 
     public Player addPlayer(String gameName, String currentPlayerName) {
-        System.out.println("Adding Player: " + currentPlayerName);
+        logger.info("Adding Player: " + currentPlayerName);
 
         Player playerToRemove = null;
         Game gameToRemovePlayerFrom = null;
@@ -99,7 +107,7 @@ public class GameManager {
                 gameToAddPlayerTo.setHost(player);
             }
             gameToAddPlayerTo.addPlayer(player);
-            System.out.println("Player with ID: " + playerID + " added");
+            logger.info("Player with ID: " + playerID + " added.");
             return player;
         }
         return null;
@@ -153,14 +161,14 @@ public class GameManager {
             for (HashMap.Entry<String, Game> entry : games.entrySet()) {
                 Game g = entry.getValue();
                 if (g.getPlayers().size() == 0 || g.getHost() == null) {
-                    System.out.println("Players in Game: " + g.getGameName() + ": " + g.getPlayers().size());
+                    logger.info("Players in Game: " + g.getGameName() + ": " + g.getPlayers().size());
                     gameToRemove = g;
                 }
             }
             if (gameToRemove != null) {
-                System.out.println("Number of Games: " + games.size());
+                logger.info("Number of Games: " + games.size());
                 removeGame(gameToRemove);
-                System.out.println("Number of Games: " + games.size());
+                logger.info("Number of Games: " + games.size());
             }
         }
     }
