@@ -1,7 +1,10 @@
 package ch.atlantis.game;
 
+import ch.atlantis.server.AtlantisServer;
+
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by Hermann Grieder on 28.10.2016.
@@ -28,7 +31,12 @@ public class GameModel {
     private int pathIdAfter;
     private int valuePaid;
 
+    private Logger logger;
+
     public GameModel() {
+
+        logger = Logger.getLogger(AtlantisServer.AtlantisLogger);
+
         initGame();
     }
 
@@ -155,7 +163,7 @@ public class GameModel {
         numberOfLayouts = folder.listFiles().length;
         Random rand = new Random();
         int layoutId = rand.nextInt(numberOfLayouts);
-        System.out.println(layoutId);
+        logger.info(String.valueOf(layoutId));
         tiles = new ArrayList<>();
         try {
             BufferedReader bf = new BufferedReader(new FileReader("src/ch/atlantis/res/Layout_" + String.valueOf(layoutId) + ".txt"));
@@ -176,10 +184,10 @@ public class GameModel {
                 }
                 bf.close();
             } catch (IOException e) {
-                System.out.println("Empty Line!");
+                logger.info("Empty line.");
             }
         } catch (FileNotFoundException e) {
-            System.out.println("File \"Layout_0.txt\" not found!");
+            logger.info("File \"Layout_0.txt\" not found.");
         }
     }
 
@@ -377,11 +385,11 @@ public class GameModel {
             if (count == 3) {
                 player.setGamePiecesOnLand(count);
                 player.addScore(4);
-                System.out.println("Player with ID " + player.getPlayerID() + " has ended game first!");
+                logger.info("Player with ID " + player.getPlayerID() + " has ended game first.");
                 isGameOver = true;
             } else {
                 player.setGamePiecesOnLand(count);
-                System.out.println("Player with ID " + player.getPlayerID() + " has " + count + " gamePieces on land");
+                logger.info("Player with ID " + player.getPlayerID() + " has " + count + " gamePieces on land.");
             }
         }
         return isGameOver;
@@ -391,12 +399,12 @@ public class GameModel {
 
         // Check if the remote and local game have the same turn number
         if (this.currentTurnLocal != currentTurnRemote) {
-            System.out.println("GameModel -> PlayerTurns do not match\nthis.PlayerTurn:" + this.currentTurnLocal + "PlayerTurn: " + currentTurnRemote);
+            logger.info("GameModel -> PlayerTurns do not match PlayerTurn:" + this.currentTurnLocal + "PlayerTurn: " + currentTurnRemote);
             return false;
         }
         // Check if the message came from the right player
         if (this.currentTurnLocal != activePlayerId) {
-            System.out.println("GameModel -> PlayerTurn and PlayerID do not match\nthis.PlayerTurn:" + this.currentTurnLocal + "PlayerId: " + activePlayerId);
+            logger.info("GameModel -> PlayerTurn and PlayerID do not match\nthis.PlayerTurn:" + this.currentTurnLocal + "PlayerId: " + activePlayerId);
             return false;
         }
 
@@ -409,9 +417,9 @@ public class GameModel {
             targetPathId = findTargetPathId(activeGamePiece, i);
             // Check if the target pathId is already occupied by someone else
             boolean targetIsOccupied = checkIfOccupied(targetPathId, activeGamePiece);
-            System.out.println("GameModel -> Target occupied: " + targetIsOccupied);
+            logger.info("GameModel -> Target occupied: " + targetIsOccupied);
             if (targetIsOccupied && !(targetPathIdsRemote.size() > i)) {
-                System.out.println("No card was played to jump over another gamePiece");
+                logger.info("No card was played to jump over another gamePiece.");
                 return false;
             }
             // Set the targetPathId as the currentPathId in the active gamePiece
@@ -433,10 +441,10 @@ public class GameModel {
                 valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
             }
             if (valuePaid >= priceToCrossWater) {
-                System.out.println(valuePaid);
-                System.out.println(players.get(activePlayerId).getScore());
+                logger.info(String.valueOf(valuePaid));
+                logger.info(String.valueOf(players.get(activePlayerId).getScore()));
                 players.get(activePlayerId).subtractScore(valuePaid);
-                System.out.println(players.get(activePlayerId).getScore());
+                logger.info(String.valueOf(players.get(activePlayerId).getScore()));
                 for (Integer index : paidCardsIndices) {
                     players.get(activePlayerId).getPathCardStack().remove(index);
                 }
@@ -447,13 +455,13 @@ public class GameModel {
         for (Integer index : playedCardsIndices) {
             Card cardToDiscard = players.get(activePlayerId).getMovementCards().get(index);
             discardedCards.add(cardToDiscard);
-            System.out.println("GameModel-> Card added to discard pile");
+            logger.info("GameModel -> Card added to discard pile");
         }
-        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
+        logger.info("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards.");
         for (Card card : discardedCards) {
-            System.out.println("GameModel -> Movement card removed: " + players.get(activePlayerId).getMovementCards().remove(card));
+            logger.info("GameModel -> Movement card removed: " + players.get(activePlayerId).getMovementCards().remove(card));
         }
-        System.out.println("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards");
+        logger.info("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards.");
 
         updatePlayerScore();
 
@@ -477,7 +485,7 @@ public class GameModel {
         if (currentTurnLocal >= players.size()) {
             currentTurnLocal = 0;
         }
-        System.out.println("GameModel -> PlayerTurn: " + this.currentTurnLocal);
+        logger.info("GameModel -> PlayerTurn: " + this.currentTurnLocal);
         return true;
     }
 
@@ -501,16 +509,16 @@ public class GameModel {
      */
     private int findTargetPathId(GamePiece activeGamePiece, int index) {
         int targetPathIdRemote = targetPathIdsRemote.get(index);
-        System.out.println("Index of selected card: " + index);
-        System.out.println("Size of playedCardsIndices " + playedCardsIndices.size());
+        logger.info("Index of selected card: " + index);
+        logger.info("Size of playedCardsIndices " + playedCardsIndices.size());
         int selectedCard = playedCardsIndices.get(index);
-        System.out.println("Movement cards: " + players.get(activePlayerId).getMovementCards().size());
+        logger.info("Movement cards: " + players.get(activePlayerId).getMovementCards().size());
 
         int startPathId = 101;
         if (activeGamePiece.getCurrentPathId() != 300) {
             startPathId = activeGamePiece.getCurrentPathId() + 1;
         }
-        System.out.println("GameModel -> StartPathId: " + startPathId);
+        logger.info("GameModel -> StartPathId: " + startPathId);
 
         boolean found = false;
         int nextPathId = startPathId;
@@ -534,12 +542,12 @@ public class GameModel {
         }
         // Check if the targetPathIds match. If they do, set the new pathId
         if (targetPathId != targetPathIdRemote) {
-            System.out.println("GameModel -> TargetPathIds do not match");
-            System.out.println("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
+            logger.info("GameModel -> TargetPathIds do not match");
+            logger.info("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
             return 0;
         } else {
-            System.out.println("GameModel -> TargetPathIds match");
-            System.out.println("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
+            logger.info("GameModel -> TargetPathIds match");
+            logger.info("LocalTargetPathId: " + targetPathId + "\nRemoteTargetPathId: " + targetPathIdRemote);
             return targetPathId;
         }
     }
@@ -557,12 +565,12 @@ public class GameModel {
         for (Player player : players) {
             for (GamePiece gamePiece : player.getGamePieces()) {
                 if (gamePiece != activeGamePiece && gamePiece.getCurrentPathId() == targetPathId && gamePiece.getCurrentPathId() != 400) {
-                    System.out.println("GameModel -> TargetPathId is occupied");
+                    logger.info("GameModel -> TargetPathId is occupied.");
                     return true;
                 }
             }
         }
-        System.out.println("GameModel -> TargetPathId is not occupied");
+        logger.info("GameModel -> TargetPathId is not occupied.");
         return false;
     }
 
@@ -600,18 +608,18 @@ public class GameModel {
             }
             // Recursive call in case we find more than one card on that pathId.
             if (count != 1) {
-                System.out.println("GameModel - > There are " + count + " cards at " + startPathId);
+                logger.info("GameModel - > There are " + count + " cards at " + startPathId);
                 return getWaterPathId(startPathId);
             }
         }
         // If by the time we get to the target path and have not found any water tiles we return 0
         if (startPathId == targetPathId) {
-            System.out.println("No water found to the target");
+            logger.info("No water found to the target");
             return 0;
         }
 
         if (count == 1 && waterPathId != 0) {
-            System.out.println("Water on PathId: " + startPathId);
+            logger.info("Water on PathId: " + startPathId);
             return waterPathId;
         }
         return 0;
@@ -628,14 +636,14 @@ public class GameModel {
      */
     private int getPriceForCrossing(int pathId) {
         int valueBehind = getValueFromCardBehind(pathId);
-        System.out.println("PRICE (BEHIND) -> " + valueBehind);
+        logger.info("Price (behind) -> " + valueBehind);
         int valueAfter = getValueFromCardAfter(pathId);
-        System.out.println("PRICE (After) -> " + valueAfter);
+        logger.info("Price (after) -> " + valueAfter);
         if (valueBehind > valueAfter) {
-            System.out.println("GameModel -> Price to cross: " + valueAfter);
+            logger.info("GameModel -> Price to cross: " + valueAfter);
             return valueAfter;
         } else {
-            System.out.println("GameModel -> Price to cross: " + valueBehind);
+            logger.info("GameModel -> Price to cross: " + valueBehind);
             return valueBehind;
         }
     }
@@ -691,7 +699,7 @@ public class GameModel {
         for (Card pathCard : pathCards) {
             if (pathCard.getPathId() == pathIdBehind) {
                 if (pathCard.getCardType() != CardType.WATER && pathCard.isOnTop()) {
-                    System.out.println("Card Behind -> " + pathCard.getValue());
+                    logger.info("Card Behind -> " + pathCard.getValue());
                     return pathCard.getValue();
                 }
             }
@@ -737,7 +745,7 @@ public class GameModel {
         // Recursive call in case we find less than two cards, which means there is only water
         // and nothing to be picked up. So we continue our search.
         if (foundCardsAtPathId.size() == 1 && foundCardsAtPathId.get(0).getPathId() != -1) {
-            System.out.println("GameModel - > There is only " + foundCardsAtPathId.size() + " card at " + startPathId);
+            logger.info("GameModel - > There is only " + foundCardsAtPathId.size() + " card at " + startPathId);
             return removePathCardFromPath(startPathId);
         }
         // If we found more than one card, we then need to check if is already occupied. If so, we need to keep searching
@@ -773,7 +781,7 @@ public class GameModel {
             indexOfCardToShow = pathCards.indexOf(cardToShow);
             pathCards.get(indexOfCardToShow).setIsOnTop(true);
         }
-        System.out.println("GameModel -> Score from PathId: " + score);
+        logger.info("GameModel -> Score from PathId: " + score);
         return score;
     }
 
@@ -789,7 +797,7 @@ public class GameModel {
         Card newCardFromDeck = deck.get(0);
         deckCardsToAdd.add(newCardFromDeck);
         players.get(currentTurnLocal).getMovementCards().add(newCardFromDeck);
-        System.out.println("GameModel -> Card with value " + newCardFromDeck.getColorSet() + " added to the player");
+        logger.info("GameModel -> Card with value " + newCardFromDeck.getColorSet() + " added to the player.");
         deck.remove(0);
     }
 

@@ -2,13 +2,12 @@ package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
 import ch.atlantis.game.GameManager;
-import com.sun.media.jfxmedia.logging.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.logging.Level;
+import java.util.logging.*;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -20,19 +19,44 @@ import java.util.logging.Level;
 
 public class AtlantisServer {
 
+    public static final String AtlantisLogger = AtlantisServer.class.getSimpleName();
+    private static Logger logger;
+    private static FileHandler fh;
+
     private static final int PORT = 9000;
     private static HashMap<Long, Socket> clientThreads = new HashMap<>();
     private int guestNumber;
 
     public static void main(String[] args) throws IOException {
 
+            logger = Logger.getLogger(AtlantisLogger);
+
+        try {
+
+            // Configure logger with handler and formatter
+            fh = new FileHandler("AtlantisServerLog.txt", 50000, 1);
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+
+            fh.setFormatter(formatter);
+
+            logger.setLevel(Level.INFO);
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         AtlantisServer server = new AtlantisServer();
 
         GameManager gameManager = new GameManager();
 
+
         ServerSocket serverSocket = new ServerSocket(PORT);
-        System.out.println("Server is running");
-        System.out.println("Listening on port: " + PORT);
+        logger.info("Server is running");
+        logger.info("Listening on port: " + PORT);
 
         //Create Database connection
         DatabaseHandler databaseHandler = new DatabaseHandler();
@@ -43,14 +67,14 @@ public class AtlantisServer {
 
             try {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Connection accepted: " + clientSocket.getRemoteSocketAddress());
+                logger.info("Connection accepted: " + clientSocket.getRemoteSocketAddress());
 
                 ClientThread clientThread = new ClientThread(clientSocket, server, databaseHandler, gameManager);
                 clientThreads.put(clientThread.getId(), clientSocket);
-                System.out.println("Starting Thread: " + clientThread.getId());
+                logger.info("Starting Thread: " + clientThread.getId());
                 clientThread.start();
             } catch (IOException e) {
-                System.out.println("Server was unable to accept user connection");
+                logger.info("Server was unable to accept user connection");
             }
         }
     }
@@ -59,18 +83,18 @@ public class AtlantisServer {
         if (clientThreads.size() == 0) {
             System.out.println("No user currently connected");
         } else if (clientThreads.size() == 1) {
-            System.out.println(clientThreads.size() + " user currently connected");
+            logger.info(clientThreads.size() + " user currently connected");
         } else {
-            System.out.println(clientThreads.size() + " users currently connected");
+            logger.info(clientThreads.size() + " users currently connected");
         }
     }
 
     void removeThread(long threadID) {
-        System.out.println("Thread ID: " + threadID);
-        System.out.println("Active Threads: " + clientThreads.size());
+        logger.info("Thread ID: " + threadID);
+        logger.info("Active Threads: " + clientThreads.size());
         clientThreads.remove(threadID);
-        System.out.println("Thread# " + threadID + " removed");
-        System.out.println("Active Threads: " + clientThreads.size());
+        logger.info("Thread# " + threadID + " removed");
+        logger.info("Active Threads: " + clientThreads.size());
     }
 
     public int getGuestNumber() {

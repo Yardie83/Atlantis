@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+
+import static ch.atlantis.server.AtlantisServer.AtlantisLogger;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -37,8 +40,12 @@ class ClientThread extends Thread {
     private Player player;
     private long gameTime;
 
+    private Logger logger;
+
     ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameManager
             gameManager) {
+
+        logger = Logger.getLogger(AtlantisServer.AtlantisLogger);
 
         this.clientSocket = clientSocket;
         this.server = server;
@@ -55,7 +62,7 @@ class ClientThread extends Thread {
                 this.inReader = new ObjectInputStream(clientSocket.getInputStream());
                 this.outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
                 outputStreams.put(clientSocket, outputStream);
-                System.out.println("OutputStreams: " + outputStreams.size());
+                logger.info("OutputStreams: " + outputStreams.size());
 
                 sendWelcomeMessage();
                 sendPlayerName(null);
@@ -65,10 +72,10 @@ class ClientThread extends Thread {
                     receiveMessage();
                 }
             } catch (IOException e) {
-                System.out.println("Unable to create reader and/or writer");
+                logger.info("Unable to create reader and/or writer");
                 return;
             } finally {
-                System.out.println("Thread " + currentThread().getName() + " terminated");
+                logger.info("Thread " + currentThread().getName() + " terminated");
             }
         }
     }
@@ -94,8 +101,9 @@ class ClientThread extends Thread {
      */
     public void sendMessage(Message message) throws IOException {
         outputStream.writeObject(message);
-        System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message
+        logger.info("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " + message
                 .getMessageObject());
+
     }
 
     /**
@@ -132,11 +140,11 @@ class ClientThread extends Thread {
             ObjectOutputStream outputStream = entry.getValue();
             {
                 try {
-                    System.out.println("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " +
+                    logger.info("Sending to User:     " + clientSocket.getRemoteSocketAddress() + " -> " +
                             messageString);
                     outputStream.writeObject(message);
                 } catch (IOException e) {
-                    System.out.println("Could not write to " + clientSocket.getRemoteSocketAddress());
+                    logger.info("Could not write to " + clientSocket.getRemoteSocketAddress());
                 }
             }
         }
@@ -185,7 +193,7 @@ class ClientThread extends Thread {
 
             sendMessageToAllClients(MessageType.GAMELIST, nameOfGame + "," + numberOfPlayers + "," +
                     currentJoinedUsers);
-            System.out.println("ClientThread -> GameList sent");
+            logger.info("ClientThread -> GameList sent");
         }
     }
 
@@ -199,7 +207,7 @@ class ClientThread extends Thread {
     private void receiveMessage() throws IOException {
         try {
             Message message = (Message) inReader.readObject();
-            System.out.println("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message
+            logger.info("Receiving from User: " + clientSocket.getRemoteSocketAddress() + " -> " + message
                     .getMessageObject());
 
             switch (message.getMessageType()) {
@@ -237,11 +245,11 @@ class ClientThread extends Thread {
                     break;
             }
         } catch (IOException e) {
-            System.out.println("User disconnected");
+            logger.info("User disconnected.");
             handleDisconnectUser(currentPlayerName);
 
         } catch (ClassNotFoundException e) {
-            System.out.println("Class \"Message\" not found");
+            logger.info("Class \"Message\" not found.");
         }
     }
 
