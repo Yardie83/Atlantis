@@ -8,6 +8,7 @@ import java.sql.*;
 /**
  * Created by Loris Grether on 05.08.2016.
  */
+
 public class DatabaseHandler {
 
     private Statement stmt;
