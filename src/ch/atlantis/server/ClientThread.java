@@ -40,6 +40,7 @@ class ClientThread extends Thread {
     private String currentPlayerName;
     private Player player;
     private long gameTime;
+    private static ArrayList<String> listUserNames;
 
     private Logger logger;
 
@@ -54,6 +55,7 @@ class ClientThread extends Thread {
         this.gameManager = gameManager;
         loggedIn = false;
         running = true;
+        listUserNames = new ArrayList<>();
     }
 
     @Override
@@ -332,6 +334,7 @@ class ClientThread extends Thread {
         //Start Timer
         gameTime = System.currentTimeMillis();
         System.out.println("Start Game Time: " + gameTime);
+        databaseHandler.getInformations(this.currentPlayerName);
     }
 
     private void handleNewGame(Message message) throws IOException {
@@ -401,7 +404,11 @@ class ClientThread extends Thread {
             // Check if the game is over and inform all the players if it is or not
 
             sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
+
             if (isGameOver) {
+
+                databaseHandler.increaseNumberOfGames(game.getPlayers());
+
                 gameManager.removeGame(game);
                 sendGameList();
             }

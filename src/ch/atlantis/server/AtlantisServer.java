@@ -31,28 +31,11 @@ public class AtlantisServer {
 
             logger = Logger.getLogger(AtlantisLogger);
 
-        try {
-
-            // Configure logger with handler and formatter
-            fh = new FileHandler("AtlantisServerLog.txt", 50000, 1);
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-
-            fh.setFormatter(formatter);
-
-            logger.setLevel(Level.INFO);
-
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        configLogger();
 
         AtlantisServer server = new AtlantisServer();
 
         GameManager gameManager = new GameManager();
-
 
         ServerSocket serverSocket = new ServerSocket(PORT);
         logger.info("Server is running");
@@ -76,6 +59,25 @@ public class AtlantisServer {
             } catch (IOException e) {
                 logger.info("Server was unable to accept user connection");
             }
+        }
+    }
+
+    private static void configLogger() {
+        try {
+
+            // Configure logger with handler and formatter
+            fh = new FileHandler("AtlantisServerLog.txt", 50000, 1);
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+
+            fh.setFormatter(formatter);
+
+            logger.setLevel(Level.INFO);
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

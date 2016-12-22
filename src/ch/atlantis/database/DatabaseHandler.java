@@ -1,11 +1,13 @@
 package ch.atlantis.database;
 
+import ch.atlantis.game.Player;
 import ch.atlantis.server.AtlantisServer;
 import ch.atlantis.util.Message;
 import ch.atlantis.util.MessageType;
 
 import java.sql.*;
 import java.util.logging.Logger;
+import java.util.ArrayList;
 
 /**
  * Created by Loris Grether on 05.08.2016.
@@ -200,5 +202,53 @@ public class DatabaseHandler {
         }
 
         System.out.println("The player: " + userName + " wasted " + gameTime + " minutes in the game.");
+    }
+
+    public void increaseNumberOfGames(ArrayList<Player> players) {
+
+        try {
+
+            for (Player player : players) {
+
+                String userName = "'" + player.getPlayerName() + "'";
+
+                String sql = "UPDATE codemonkeysatlantisdb.tbl_user SET " +
+                        "codemonkeysatlantisdb.tbl_user.NumberOfGames = codemonkeysatlantisdb.tbl_user.NumberOfGames + " + 1 +
+                        " WHERE codemonkeysatlantisdb.tbl_user.UserName = " + userName;
+
+                PreparedStatement statement = null;
+                statement = cn.prepareStatement(sql);
+                statement.execute();
+                statement.close();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getInformations(String currentPlayerName) {
+
+        PreparedStatement preparedStatement = null;
+        rs = null;
+
+        //String query = "SELECT COUNT(*) FROM tbl_User WHERE userName = ?";
+
+        String query = "select codemonkeysatlantisdb.tbl_user.NumberOfGames\n" +
+                "from codemonkeysatlantisdb.tbl_user\n" +
+                "where codemonkeysatlantisdb.tbl_user.UserName = ?";
+
+        try {
+
+            preparedStatement = cn.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            preparedStatement.setString(1, currentPlayerName);
+
+            rs = preparedStatement.executeQuery();
+
+            //rs.
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
