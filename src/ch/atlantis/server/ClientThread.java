@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static ch.atlantis.server.AtlantisServer.AtlantisLogger;
-
 /**
  * Created by Hermann Grieder on 16.07.2016.
  * <p>
@@ -40,8 +38,6 @@ class ClientThread extends Thread {
     private String currentPlayerName;
     private Player player;
     private long gameTime;
-    private static ArrayList<String> listUserNames;
-
     private Logger logger;
 
     ClientThread(Socket clientSocket, AtlantisServer server, DatabaseHandler databaseHandler, GameManager
@@ -55,7 +51,6 @@ class ClientThread extends Thread {
         this.gameManager = gameManager;
         loggedIn = false;
         running = true;
-        listUserNames = new ArrayList<>();
     }
 
     @Override
@@ -298,10 +293,10 @@ class ClientThread extends Thread {
         String playerName = credentials[0];
         try {
             if (databaseHandler.userLogin(message)) {
-                startGameTimer();
                 loggedIn = true;
                 sendMessage(new Message(MessageType.LOGIN, true));
                 sendPlayerName(playerName);
+                startGameTimer();
             } else if (!(databaseHandler.userLogin(message))) {
                 sendMessage(new Message(MessageType.LOGIN, false));
             }
@@ -316,12 +311,18 @@ class ClientThread extends Thread {
     private void handleCreateProfile(Message message) {
         String[] credentials = splitMessage(message);
         String playerName = credentials[0];
+
         try {
             if (databaseHandler.createProfile(message)) {
-                startGameTimer();
+
+                if (playerName != currentPlayerName){
+                    endTimer();
+                }
+
                 loggedIn = true;
                 sendMessage(new Message(MessageType.CREATEPROFILE, true));
                 sendPlayerName(playerName);
+                startGameTimer();
             } else {
                 sendMessage(new Message(MessageType.CREATEPROFILE, false));
             }
@@ -330,11 +331,13 @@ class ClientThread extends Thread {
         }
     }
 
-    private void startGameTimer() {
+    private void startGameTimer() throws IOException {
         //Start Timer
         gameTime = System.currentTimeMillis();
         System.out.println("Start Game Time: " + gameTime);
-        databaseHandler.getInformations(this.currentPlayerName);
+
+        //sends the game stats to the client
+        sendMessage(new Message(MessageType.PLAYERSTATS, databaseHandler.getInformation(this.currentPlayerName)));
     }
 
     private void handleNewGame(Message message) throws IOException {
@@ -453,11 +456,7 @@ class ClientThread extends Thread {
         server.removeThread(currentThread().getId());
 
         //End Timer
-        gameTime = System.currentTimeMillis() - gameTime;
-
-        long time = TimeUnit.MILLISECONDS.toMinutes(gameTime);
-
-        databaseHandler.enterGameTime(TimeUnit.MILLISECONDS.toMinutes(gameTime), this.currentPlayerName);
+        endTimer();
 
         outputStreams.remove(clientSocket);
         running = false;
@@ -466,5 +465,12 @@ class ClientThread extends Thread {
         outputStream.close();
         clientSocket.close();
         sendMessageToAllClients(MessageType.CHAT, "User " + currentPlayerName + " left the chat");
+    }
+
+    //End Timer
+    private void endTimer() {
+        gameTime = System.currentTimeMillis() - gameTime;
+        long time = TimeUnit.MILLISECONDS.toMinutes(gameTime);
+        databaseHandler.enterGameTime(TimeUnit.MILLISECONDS.toMinutes(gameTime), this.currentPlayerName);
     }
 }

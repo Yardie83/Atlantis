@@ -184,8 +184,6 @@ public class DatabaseHandler {
         //This line adds two '' to the string
         String userName = "'" + s + "'";
 
-        System.out.println("THE NUMBER OF MINUTES IS: " + gameTime);
-
         try {
 
             String sql = "UPDATE codemonkeysatlantisdb.tbl_user SET " +
@@ -200,8 +198,6 @@ public class DatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        System.out.println("The player: " + userName + " wasted " + gameTime + " minutes in the game.");
     }
 
     public void increaseNumberOfGames(ArrayList<Player> players) {
@@ -227,14 +223,12 @@ public class DatabaseHandler {
         }
     }
 
-    public void getInformations(String currentPlayerName) {
+    public int[] getInformation(String currentPlayerName) {
 
         PreparedStatement preparedStatement = null;
         rs = null;
 
-        //String query = "SELECT COUNT(*) FROM tbl_User WHERE userName = ?";
-
-        String query = "select codemonkeysatlantisdb.tbl_user.NumberOfGames\n" +
+        String query = "select codemonkeysatlantisdb.tbl_user.CumulatedGameTime, codemonkeysatlantisdb.tbl_user.NumberOfGames\n" +
                 "from codemonkeysatlantisdb.tbl_user\n" +
                 "where codemonkeysatlantisdb.tbl_user.UserName = ?";
 
@@ -245,10 +239,22 @@ public class DatabaseHandler {
 
             rs = preparedStatement.executeQuery();
 
-            //rs.
+            int[] infos = new int[2];
+
+            if (rs.next()){
+
+                infos[0] = rs.getInt("CumulatedGameTime");
+                infos[1] = rs.getInt("NumberOfGames");
+            }
+
+            preparedStatement.close();
+            rs.close();
+
+            return infos;
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

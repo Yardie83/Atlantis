@@ -22,5 +22,6 @@ public enum MessageType {
     BUYCARD,
     CANTMOVE,
     NEWTURN,
+    PLAYERSTATS,
 }
 
