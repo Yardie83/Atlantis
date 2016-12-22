@@ -437,18 +437,37 @@ public class GameModel {
 
         if (paidCardsIndices != null && paidCardsIndices.size() != 0) {
             valuePaid = 0;
-            for (Integer index : paidCardsIndices) {
-                valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
+            for (Card card : players.get(currentTurnLocal).getPathCardStack()) {
+                System.out.println("Card value - > " + players.get(currentTurnLocal).getPathCardStack().indexOf(card) + " : " + card.getValue());
             }
+            for (Integer index : paidCardsIndices) {
+                System.out.println("Player value we have - > " + players.get(currentTurnLocal).getPlayerID() + " : " + index + "  " + players.get(currentTurnLocal).getPathCardStack().get(index).getValue());
+                valuePaid += players.get(currentTurnLocal).getPathCardStack().get(index).getValue();
+            }
+            System.out.println("price to cross " + priceToCrossWater);
+            System.out.println("Value we pay - > " + valuePaid);
             if (valuePaid >= priceToCrossWater) {
-                logger.info(String.valueOf(valuePaid));
-                logger.info(String.valueOf(players.get(activePlayerId).getScore()));
-                players.get(activePlayerId).subtractScore(valuePaid);
-                logger.info(String.valueOf(players.get(activePlayerId).getScore()));
+                System.out.println("Price we need to pay - > " + valuePaid);
+                System.out.println("Score of player - > " + players.get(currentTurnLocal).getScore());
+                players.get(currentTurnLocal).subtractScore(valuePaid);
+                System.out.println("Score after subtracting - > " + players.get(currentTurnLocal).getScore());
+                for (Card card : players.get(currentTurnLocal).getPathCardStack()) {
+                    System.out.println("Path card stack of player " + players.get(currentTurnLocal).getPlayerID() + " : " + card.getValue());
+                }
                 for (Integer index : paidCardsIndices) {
-                    players.get(activePlayerId).getPathCardStack().remove(index);
+                    System.out.println("Indices we remove - > " + index);
+                    System.out.println("Path card stack before removing and after removing - > " + players.get(currentTurnLocal).getPathCardStack().size());
+                    Card card = players.get(currentTurnLocal).getPathCardStack().get(index);
+                    players.get(currentTurnLocal).getPathCardStack().remove(card);
+                    System.out.println("Path card stack before removing and after removing - > " + players.get(currentTurnLocal).getPathCardStack().size());
+                }
+                for (Card card : players.get(currentTurnLocal).getPathCardStack()) {
+                    System.out.println("Path card stack of player " + players.get(currentTurnLocal).getPlayerID() + " : " + card.getValue());
                 }
             }
+        }
+        if (paidCardsIndices != null) {
+            paidCardsIndices.clear();
         }
 
         // Remove the movement card played by the player and add it to the discarded cards list
@@ -463,7 +482,7 @@ public class GameModel {
         }
         logger.info("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards.");
 
-        updatePlayerScore();
+        updateScore();
 
 
         // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
@@ -488,16 +507,12 @@ public class GameModel {
         logger.info("GameModel -> PlayerTurn: " + this.currentTurnLocal);
         return true;
     }
-
-    private void updatePlayerScore() {
-        int score;
+    private void updateScore() {
         int scoreToAdd = removePathCardFromPath(targetPathId);
-        int scoreToSubtract = valuePaid;
-        score = scoreToAdd - scoreToSubtract;
-        // Add the score of that card to the player
-        players.get(activePlayerId).addScore(score);
+        System.out.println("Score we add to the player - > " + scoreToAdd);
+        players.get(activePlayerId).addScore(scoreToAdd);
+        System.out.println("Score after adding - > " + players.get(activePlayerId).getScore());
     }
-
     /**
      * Hermann Grieder
      * <br>
@@ -837,6 +852,7 @@ public class GameModel {
         HashMap<String, Object> gameStateMap = new HashMap<>();
         gameStateMap.put("CurrentTurn", currentTurnLocal);
         gameStateMap.put("Players", players);
+        System.out.println("Score we send - > " + players.get(activePlayerId).getScore());
         gameStateMap.put("Score", players.get(activePlayerId).getScore());
         gameStateMap.put("GamePieceUsedIndex", selectedGamePieceIndex);
         gameStateMap.put("TargetPathId", targetPathId);

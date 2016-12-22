@@ -86,5 +86,7 @@ public class Player implements Serializable {
     public void setGamePiecesOnLand(int gamePiecesOnLand) { this.gamePiecesOnLand = gamePiecesOnLand; }
 
     public ArrayList<Card> getPathCardStack() { return pathCardStack; }
+
+    public void setScore(int score) { this.score = score; }
 }
 
