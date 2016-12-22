@@ -32,6 +32,14 @@ public class GameController {
         return gameModel.handleUserCardPurchase(indexOfCard);
     }
 
+    public HashMap<Integer, Integer> getScores() {
+        HashMap<Integer, Integer> scoresToSend = new HashMap<>();
+        for (Player player : gameModel.getPlayers()) {
+            scoresToSend.put(player.getPlayerID(), player.getScore());
+        }
+        return scoresToSend;
+    }
+
     public ArrayList<Card> handleCantMove() {
         return gameModel.handleCantMove();
     }

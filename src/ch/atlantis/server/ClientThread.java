@@ -398,14 +398,15 @@ class ClientThread extends Thread {
             if (gameManager.handleMove(game, incomingGameState)) {
                 isGameOver = gameManager.isGameOver(game);
                 // The move is valid, now inform all the players of the changes.
+            }
+            if (!isGameOver) {
                 HashMap<String, Object> newGameState = gameManager.writeGameState(game);
                 sendMessageToAllPlayers(currentPlayer, new Message(MessageType.MOVE, newGameState));
+                sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
             }
-            // Check if the game is over and inform all the players if it is or not
-
-            sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
-
             if (isGameOver) {
+                sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, game.getGameController().getScores()));
+                sendMessageToAllPlayers(currentPlayer, new Message(MessageType.GAMEOVER, isGameOver));
 
                 databaseHandler.increaseNumberOfGames(game.getPlayers());
 
