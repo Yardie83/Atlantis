@@ -386,6 +386,10 @@ public class GameModel {
                 player.setGamePiecesOnLand(count);
                 player.addScore(4);
                 logger.info("Player with ID " + player.getPlayerID() + " has ended game first.");
+                for(Player playerToAddPoints : players){
+                    playerToAddPoints.addScore(playerToAddPoints.getMovementCards().size());
+                    logger.info("Added " + playerToAddPoints.getMovementCards().size() + " points to the player from his movement cards count");
+                }
                 isGameOver = true;
             } else {
                 player.setGamePiecesOnLand(count);
