@@ -284,7 +284,7 @@ class ClientThread extends Thread {
             Game game = gameManager.findGame(hashToBuyCards); // Find specific game
             int indexOfCard = (Integer) hashToBuyCards.get("Index");
             ArrayList<Card> arrayListOfPurchasedCards = game.getGameController().handleUserCardPurchase(indexOfCard); // Return an AL with purchased cards
-            sendMessageToAllPlayers(this.player, new Message(MessageType.BUYCARD, arrayListOfPurchasedCards)); // Send message back to client
+            sendMessage(new Message(MessageType.BUYCARD, arrayListOfPurchasedCards)); // Send message back to client
         }
     }
 
