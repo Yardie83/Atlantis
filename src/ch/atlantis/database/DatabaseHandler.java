@@ -15,6 +15,9 @@ import java.util.logging.Logger;
 
 public class DatabaseHandler {
 
+    private final String userName = "root";
+    private final String password = "maschine1";
+
     private Statement stmt;
     private Connection cn;
     private ResultSet rs;
@@ -24,7 +27,7 @@ public class DatabaseHandler {
     public DatabaseHandler() {
 
         logger = Logger.getLogger(AtlantisServer.AtlantisLogger);
-        logger.info("Enter constructor.");
+
 
         createDatabase();
         connectToDatabase();
@@ -38,16 +41,13 @@ public class DatabaseHandler {
         stmt = null;
         rs = null;
 
-        //localhost replaces the ip-Adress (127.0.0.1 should work as well)
+        //localhost replaces the ip-Address (127.0.0.1 should work as well)
 
         String serverInfo = "jdbc:mysql://" + "localhost" + ":" + "3306" + "/";
         //String optionInfo = "?connectTimeout=5000";
         logger.info("Opening connection to " + serverInfo + "\n");
 
         try {
-
-            String userName = "root";
-            String password = "maschine1";
 
             cn = DriverManager.getConnection(serverInfo, userName, password);
 
