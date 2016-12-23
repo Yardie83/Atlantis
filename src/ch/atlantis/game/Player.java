@@ -14,7 +14,6 @@ public class Player implements Serializable {
     private String playerName;
     private String gameName;
     private int playerID;
-    private int bridge;
     private int score;
     private int gamePiecesOnLand;
 
@@ -26,7 +25,6 @@ public class Player implements Serializable {
         this.movementCards = new ArrayList<>();
         this.gamePieces = new ArrayList<>(3);
         this.pathCardStack = new ArrayList<>();
-        this.bridge = 1;
         addGamePiece();
     }
 
@@ -55,14 +53,6 @@ public class Player implements Serializable {
 
     public ArrayList<GamePiece> getGamePieces() {
         return gamePieces;
-    }
-
-    public void removeBridge() {
-        this.bridge = 0;
-    }
-
-    public int getBridge() {
-        return bridge;
     }
 
     public ArrayList<Card> getMovementCards() {
