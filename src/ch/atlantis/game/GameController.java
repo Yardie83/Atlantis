@@ -32,6 +32,11 @@ public class GameController {
         return gameModel.handleUserCardPurchase(indexOfCard);
     }
 
+    /**
+     * Fabian Witschi
+     * @return final score before game is over
+     */
+
     public HashMap<Integer, Integer> getScores() {
         HashMap<Integer, Integer> scoresToSend = new HashMap<>();
         for (Player player : gameModel.getPlayers()) {
