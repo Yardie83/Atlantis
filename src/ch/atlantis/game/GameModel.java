@@ -1002,16 +1002,9 @@ public class GameModel {
     /**
      * Can Heval Cokyasar
      *
-     * @param indexOfCard
-     * @return
+     * Returns the right amount of purchased cards in an ArrayList, updates the score and the deck.
      */
-    /**
-     * Fabian Witschi
-     * <br>
-     *
-     * @param indexOfCard
-     * @return
-     */
+
     public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
         ArrayList<Card> purchasedCards = new ArrayList<>();
         Player player = players.get(currentTurnLocal);
