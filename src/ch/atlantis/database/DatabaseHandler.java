@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 public class DatabaseHandler {
 
+    //must possibly be adjusted by the user
     private final String userName = "root";
     private final String password = "maschine1";
 
@@ -28,12 +29,7 @@ public class DatabaseHandler {
 
         logger = Logger.getLogger(AtlantisServer.AtlantisLogger);
 
-
-        createDatabase();
         connectToDatabase();
-    }
-
-    private void createDatabase() {
     }
 
     private void connectToDatabase() {
@@ -44,7 +40,7 @@ public class DatabaseHandler {
         //localhost replaces the ip-Address (127.0.0.1 should work as well)
 
         String serverInfo = "jdbc:mysql://" + "localhost" + ":" + "3306" + "/";
-        //String optionInfo = "?connectTimeout=5000";
+
         logger.info("Opening connection to " + serverInfo + "\n");
 
         try {
@@ -200,6 +196,7 @@ public class DatabaseHandler {
         }
     }
 
+    //This method increases the number of games for a player that is logged in and finished a game
     public void increaseNumberOfGames(ArrayList<Player> players) {
 
         try {
@@ -223,6 +220,7 @@ public class DatabaseHandler {
         }
     }
 
+    //This method reads some informations out of the database
     public int[] getInformation(String currentPlayerName) {
 
         PreparedStatement preparedStatement = null;

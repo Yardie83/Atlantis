@@ -502,7 +502,9 @@ class ClientThread extends Thread {
         sendMessageToAllClients(MessageType.CHAT, "User " + currentPlayerName + " left the chat");
     }
 
-    //End Timer
+    /**
+     * Loris Grether
+     */
     private void endTimer() {
         gameTime = System.currentTimeMillis() - gameTime;
         long time = TimeUnit.MILLISECONDS.toMinutes(gameTime);
