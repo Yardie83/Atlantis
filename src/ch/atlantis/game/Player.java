@@ -6,6 +6,7 @@ import java.util.ArrayList;
 /**
  * Created by Hermann Grieder on 15/08/16.
  */
+
 public class Player implements Serializable {
     private static final long serialVersionUID = 7661939850705259874L;
     private ArrayList<GamePiece> gamePieces;

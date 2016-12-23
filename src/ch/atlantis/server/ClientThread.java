@@ -274,8 +274,7 @@ class ClientThread extends Thread {
     /**
      * Can Heval Cokyasar
      *
-     * @param message Incoming message
-     * @throws IOException
+     * Handle the incoming message object from the AtlantisClient and send it back.
      */
 
     private void handleBuyCards(Message message) throws IOException {

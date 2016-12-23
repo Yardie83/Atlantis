@@ -34,7 +34,7 @@ public class AtlantisServer {
 
         logger = Logger.getLogger(AtlantisLogger);
 
-        configLogger();
+        initLogger();
 
         AtlantisServer server = new AtlantisServer();
 
@@ -65,7 +65,13 @@ public class AtlantisServer {
         }
     }
 
-    private static void configLogger() {
+    /**
+     * Can Heval Cokyasar
+     *
+     * Configure the logger
+     */
+
+    private static void initLogger() {
         try {
 
             // Configure logger with handler and formatter
