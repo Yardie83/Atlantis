@@ -1,7 +1,10 @@
 package ch.atlantis.server;
 
 import ch.atlantis.database.DatabaseHandler;
-import ch.atlantis.game.*;
+import ch.atlantis.game.Card;
+import ch.atlantis.game.Game;
+import ch.atlantis.game.GameManager;
+import ch.atlantis.game.Player;
 import ch.atlantis.util.Message;
 import ch.atlantis.util.MessageType;
 
@@ -255,7 +258,7 @@ class ClientThread extends Thread {
     /**
      * Fabian Witschi
      *
-     * @param message
+     * @param message  Incoming message
      */
 
     private void handleCantMove(Message message) throws IOException {
@@ -263,7 +266,7 @@ class ClientThread extends Thread {
         Game game = gameManager.getGames().get(gameName);
         ArrayList<Card> twoCardsForNotMoving = game.getGameController().handleCantMove();
         sendMessage(new Message(MessageType.CANTMOVE, twoCardsForNotMoving));
-        Integer currentTurnToSend = new Integer(game.getGameController().handleNewTurn());
+        Integer currentTurnToSend = new Integer(game.getGameController().increaseTurnCount());
         Player currentPlayer = this.player;
         sendMessageToAllPlayers(currentPlayer, new Message(MessageType.NEWTURN, currentTurnToSend));
     }
@@ -271,7 +274,7 @@ class ClientThread extends Thread {
     /**
      * Can Heval Cokyasar
      *
-     * @param message
+     * @param message Incoming message
      * @throws IOException
      */
 
@@ -286,6 +289,9 @@ class ClientThread extends Thread {
     }
 
     /**
+     * Loris Grether
+     * <br>
+     *
      * @param message Message received from the client
      */
     private void handleLogin(Message message) {
@@ -306,6 +312,9 @@ class ClientThread extends Thread {
     }
 
     /**
+     * Loris Grether
+     * <br>
+     *
      * @param message Message received from the client
      */
     private void handleCreateProfile(Message message) {
@@ -315,7 +324,7 @@ class ClientThread extends Thread {
         try {
             if (databaseHandler.createProfile(message)) {
 
-                if (playerName != currentPlayerName){
+                if (!playerName.equals(currentPlayerName)){
                     endTimer();
                 }
 
@@ -331,6 +340,11 @@ class ClientThread extends Thread {
         }
     }
 
+    /**
+     * Loris Grether
+     *
+     * @throws IOException Throws exception when it was not possible send the join game message
+     */
     private void startGameTimer() throws IOException {
         //Start Timer
         gameTime = System.currentTimeMillis();
@@ -340,12 +354,29 @@ class ClientThread extends Thread {
         sendMessage(new Message(MessageType.PLAYERSTATS, databaseHandler.getInformation(this.currentPlayerName)));
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Creates a new game and then calls the join game method to add the player to that newly created game
+     *
+     * @param message Incoming message
+     * @throws IOException Throws exception when it was not possible send the join game message
+     */
     private void handleNewGame(Message message) throws IOException {
         if (gameManager.handleNewGame(message)) {
             handleJoinGame(message);
         }
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * After a game has been created the player goes through the same join method like any other player.
+     * It adds the player to the game and then sends the new gameList back to all connected users.
+     *
+     * @param message Incoming message
+     * @throws IOException Throws exception when it was not possible send the join game message
+     */
     private void handleJoinGame(Message message) throws IOException {
         // Extract the information from the message
         String[] gameInformation = message.getMessageObject().toString().split(",");
@@ -447,6 +478,8 @@ class ClientThread extends Thread {
     }
 
     /**
+     * When a user disconnects he needs to be removed and all open streams need to be closed.
+     *
      * @param currentPlayerName Current name of the player
      * @throws IOException If if was not possible to close all resources
      */

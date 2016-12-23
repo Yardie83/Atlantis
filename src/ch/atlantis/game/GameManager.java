@@ -4,7 +4,6 @@ import ch.atlantis.server.AtlantisServer;
 import ch.atlantis.util.Message;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -37,7 +36,6 @@ public class GameManager {
      *
      * @param message Message received from the client
      */
-
     public boolean handleNewGame(Message message) throws IOException {
 
         // Extract the information from the message
@@ -58,6 +56,14 @@ public class GameManager {
         }
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Checks if the game is full
+     *
+     * @param gameName Name of the game to be checked
+     * @return True if the game is full
+     */
     public boolean isGameFull(String gameName) {
         Game g = games.get(gameName);
         if (g.getPlayers().size() == g.getNumberOfPlayers()) {
@@ -67,6 +73,15 @@ public class GameManager {
         return false;
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * When a user tries to join a game this method checks if and how it is possible.
+     *
+     * @param gameName          Name of the game
+     * @param currentPlayerName Name of the player to be added
+     * @return A new player object
+     */
     public Player addPlayer(String gameName, String currentPlayerName) {
         logger.info("Adding Player: " + currentPlayerName);
 
@@ -98,12 +113,12 @@ public class GameManager {
             gameToRemovePlayerFrom.removePlayer(playerToRemove);
         }
         //Now that we checked everything, we can add the player to the game
-        //
+
         // If we found a game to add the player to, then create a new player and add the player to that game.
         if (gameToAddPlayerTo != null) {
             int playerID = gameToAddPlayerTo.getPlayers().size();
             Player player = new Player(currentPlayerName, playerID, gameName);
-            if(gameToAddPlayerTo.getPlayers().size() == 0){
+            if (gameToAddPlayerTo.getPlayers().size() == 0) {
                 gameToAddPlayerTo.setHost(player);
             }
             gameToAddPlayerTo.addPlayer(player);
@@ -113,19 +128,74 @@ public class GameManager {
         return null;
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Removes a player from a game
+     *
+     * @param currentPlayerName Name of the player which needs to be removed
+     */
     public void removePlayer(String currentPlayerName) {
         for (HashMap.Entry<String, Game> entry : games.entrySet()) {
             Game g = entry.getValue();
-            if(g.getHost().getPlayerName().equals(currentPlayerName)){
+            if (g.getHost().getPlayerName().equals(currentPlayerName)) {
                 g.getPlayers().remove(0);
                 g.setHost(null);
             }
         }
     }
 
-    public boolean handleMove(Game game, HashMap<String, Object> gameStateMap){
+    /**
+     * Hermann Grieder
+     * <br>
+     * Calls the gameController handleMove method
+     *
+     * @param game         The game instance
+     * @param gameStateMap The gameStateMap from the client
+     * @return The new gameStateMap created after the move has been validated
+     */
+    public boolean handleMove(Game game, HashMap<String, Object> gameStateMap) {
         return game.getGameController().handleMove(gameStateMap);
+    }
 
+
+    /**
+     * Finds the game name
+     *
+     * @param gameStateMap GameStateMap
+     * @return Game name
+     */
+    public Game findGame(HashMap<String, Object> gameStateMap) {
+        String gameName = (String) gameStateMap.get("GameName");
+        return games.get(gameName);
+    }
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Updates the gameList
+     */
+    public void updateGameList() {
+        // Check for empty games or games without a host and remove them from the list
+        if (games != null) {
+            Game gameToRemove = null;
+            for (HashMap.Entry<String, Game> entry : games.entrySet()) {
+                Game g = entry.getValue();
+                if (g.getPlayers().size() == 0 || g.getHost() == null) {
+                    logger.info("Players in Game: " + g.getGameName() + ": " + g.getPlayers().size());
+                    gameToRemove = g;
+                }
+            }
+            if (gameToRemove != null) {
+                logger.info("Number of Games: " + games.size());
+                removeGame(gameToRemove);
+                logger.info("Number of Games: " + games.size());
+            }
+        }
+    }
+
+    public void removeGame(Game game) {
+        games.remove(game.getGameName());
     }
 
     public HashMap<String, Game> getGames() {
@@ -147,34 +217,6 @@ public class GameManager {
 
     public HashMap<String, Object> writeGameState(Game game) {
         return game.getGameController().writeGameState();
-    }
-
-    public Game findGame(HashMap<String, Object> gameStateMap){
-        String gameName = (String) gameStateMap.get("GameName");
-        return games.get(gameName);
-    }
-
-    public void updateGameList() {
-        // Check for empty games or games without the host and remove them from the list
-        if (games != null) {
-            Game gameToRemove = null;
-            for (HashMap.Entry<String, Game> entry : games.entrySet()) {
-                Game g = entry.getValue();
-                if (g.getPlayers().size() == 0 || g.getHost() == null) {
-                    logger.info("Players in Game: " + g.getGameName() + ": " + g.getPlayers().size());
-                    gameToRemove = g;
-                }
-            }
-            if (gameToRemove != null) {
-                logger.info("Number of Games: " + games.size());
-                removeGame(gameToRemove);
-                logger.info("Number of Games: " + games.size());
-            }
-        }
-    }
-
-    public void removeGame(Game game){
-        games.remove(game.getGameName());
     }
 
 }

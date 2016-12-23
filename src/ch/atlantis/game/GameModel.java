@@ -8,6 +8,10 @@ import java.util.logging.Logger;
 
 /**
  * Created by Hermann Grieder on 28.10.2016.
+ * <p>
+ * The game model is the core class for a game and holds all the information about the current game state. It creates
+ * the pathCards and the movement cards and reads the board layout. During the game it reads and writes game states
+ * and updates the corresponding values.
  */
 public class GameModel {
 
@@ -29,7 +33,6 @@ public class GameModel {
     private int indexOfCardToRemove;
     private int indexOfCardToShow;
     private int pathIdAfter;
-    private int valuePaid;
 
     private Logger logger;
 
@@ -45,7 +48,7 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
-     * Starts the initialisation of the needed game components for the game.
+     * Starts the initialization of the needed game components for the game.
      */
     private void initGame() {
         players = new ArrayList<>();
@@ -71,9 +74,9 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
-     * Create 105 movement cards with their value and CardType.MOVEMENT
+     * Creates 105 movement cards with their value and CardType.MOVEMENT
      *
-     * @return
+     * @return ArrayList with a 105 movement cards.
      */
     private ArrayList<Card> createMovementCards() {
         movementCards = new ArrayList<>();
@@ -141,6 +144,14 @@ public class GameModel {
         }
     }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Creates 49 path cards. Both set A and B are created here. Later they are "cleaned" by removing the unnecessary cards
+     * from the decks.
+     *
+     * @return ArrayList with 49 pathCards.
+     */
     private ArrayList<Card> createPathCards() {
         ArrayList<Card> pathCardsSet = new ArrayList<>();
         for (int j = 0; j < 7; j++) {
@@ -154,7 +165,8 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
-     * Reads a random layout file and creates the correspondent tiles from it
+     * Reads a random layout file and creates the correspondent tiles from it. Layouts are found in the "res" folder.
+     * This allows the game to have multiple layouts and is easy to extend with more layouts.
      * <p>
      */
     private void readLayout() {
@@ -194,9 +206,10 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
+     * Adds the tile path id values to each card (pathCards, movement cards, start and end)
      *
-     * @param pathCardsSetA
-     * @param pathCardsSetB
+     * @param pathCardsSetA PathCard set A
+     * @param pathCardsSetB PathCard set B
      */
     private void placeCards(ArrayList<Card> pathCardsSetA, ArrayList<Card> pathCardsSetB) {
         pathCards = new ArrayList<>();
@@ -248,6 +261,7 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
+     * Special cards are water, start and end. These are being created in this method.
      *
      * @param colorSet
      * @param cardType
@@ -262,9 +276,11 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
+     * Since the path has rules for placing one or two pathCards on the path we use this method to place one card
+     * onto the board.
      *
-     * @param iterator
-     * @param tile
+     * @param iterator The iterator which holds the pathCards
+     * @param tile     The tile where that card should be place onto
      */
     private void placeOneCard(Iterator<Card> iterator, Tile tile) {
         Card card = iterator.next();
@@ -275,9 +291,11 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
+     * Since the path has rules for placing one or two pathCards on the path we use this method to place two cards
+     * onto the board.
      *
-     * @param iterator
-     * @param tile
+     * @param iterator The iterator which holds the pathCards
+     * @param tile     The tile where that card should be place onto
      */
     private void placeTwoCards(Iterator<Card> iterator, Tile tile) {
         Card card;
@@ -295,7 +313,7 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
-     * Gives the card a pathId according to the tile path id
+     * Gives the card a pathId according to the tile path id and adds the card to the final pathCards ArrayList
      *
      * @param card Card for which to set the path id
      * @param tile Tile which holds the path id that should be assigned to the card
@@ -346,7 +364,7 @@ public class GameModel {
      * Hermann Grieder
      * <br>
      * Writes the initial Game State Map. Which holds different information than
-     * what is needed during the actual gameplay.
+     * what is needed during the actual game play.
      *
      * @return HashMap
      */
@@ -368,7 +386,8 @@ public class GameModel {
     /**
      * Fabian Witschi
      * <br>
-     * Checks if the game is over by checking if there are still gamePieces on the way to the end
+     * Checks if the game is over by checking if there are still gamePieces on the way to the end. This method
+     * is called after every move on the client side.
      *
      * @return True if the game is over
      */
@@ -399,6 +418,17 @@ public class GameModel {
         return isGameOver;
     }
 
+    /**
+     * Hermann Grieder & Fabian Witschi
+     * <br>
+     * This method does the bulk of the move during the game. It checks if the move made by the player is indeed correct,
+     * by checking if the targetPathId matches with what the client calculated, then checks if the target is occupied,
+     * if so it checks if the player played another card, then checks for water and if the player paid the correct price
+     * to cross the water. When everything is ok, it removes the played and paid cards from the players deck and increases
+     * the turn count.
+     *
+     * @return True if the move was valid, false if not valid.
+     */
     public boolean handleMove() {
 
         // Check if the remote and local game have the same turn number
@@ -413,7 +443,43 @@ public class GameModel {
         }
 
         GamePiece activeGamePiece = players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex);
-        int startPathId = activeGamePiece.getCurrentPathId();
+        // Check if the player dealt with the situation that the target was occupied
+        if (!playerDealtWithOccupied(activeGamePiece)) {
+            return false;
+        }
+        // Check if the player dealt with the situation that there was water on the way
+        if (!playerDealtWithCrossingWater(activeGamePiece.getCurrentPathId())){
+            return false;
+        }
+        // add the played cards to the discard pile
+        addPlayedCardsToDiscardPile();
+
+        // Update the player score
+        updateScore();
+
+        // Check if the game is over. If not give the player new cards
+        if (!checkIfGameOver()) {
+            givePlayerNewCards();
+        }
+        // increase the turn count to the next player
+        increaseTurnCount();
+
+        //Return true
+        logger.info("GameModel -> Move was successful");
+        logger.info("GameModel -> PlayerTurn: " + this.currentTurnLocal);
+        return true;
+    }
+
+    /**
+     * Hermann Grieder
+     * <br>
+     *  Find the targetPathId and then checks if the player played enough other cards to land on a unoccupied
+     *  path.
+     *
+     * @param activeGamePiece The gamePiece that was used in that move
+     * @return True if the player played enough cards to land on a path that is not occupied.
+     */
+    private boolean playerDealtWithOccupied(GamePiece activeGamePiece) {
         //We repeat these following steps and check if every move made is valid. If all of them are valid we
         // accept the move and increase the turn count and can return true
         for (int i = 0; i < targetPathIdsRemote.size(); i++) {
@@ -429,7 +495,19 @@ public class GameModel {
             // Set the targetPathId as the currentPathId in the active gamePiece
             players.get(activePlayerId).getGamePieces().get(selectedGamePieceIndex).setCurrentPathId(targetPathId);
         }
+        return true;
+    }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Checks if the player paid enough to cross water if there was water on the way to the target.
+     * Removes the cards used to pay from the player and subtracts the score from the player
+     *
+     * @param startPathId The pathId from where to start looking for water
+     * @return True if the player paid the required amount to cross or more
+     */
+    private boolean playerDealtWithCrossingWater(int startPathId) {
         // Check if there is water on the way to the target. Return the pathId of that water tile or 0 if not water is on the way
         int waterPathId = getWaterPathId(startPathId);
         int priceToCrossWater = 0;
@@ -440,43 +518,32 @@ public class GameModel {
         }
 
         if (paidCardsIndices != null && paidCardsIndices.size() != 0) {
-            valuePaid = 0;
-            for (Card card : players.get(activePlayerId).getPathCardStack()) {
-                System.out.println("Card value - > " + players.get(activePlayerId).getPathCardStack().indexOf(card) + " : " + card.getValue());
-            }
+            int valuePaid = 0;
+
             for (Integer index : paidCardsIndices) {
-                System.out.println("Player value we have - > " + players.get(activePlayerId).getPlayerID() + " : " + index + "  " + players.get(activePlayerId).getPathCardStack().get(index).getValue());
                 valuePaid += players.get(activePlayerId).getPathCardStack().get(index).getValue();
             }
-            System.out.println("price to cross " + priceToCrossWater);
-            System.out.println("Value we pay - > " + valuePaid);
+            System.out.println("Price to cross " + priceToCrossWater);
+            System.out.println("Price we need to pay - > " + valuePaid);
             if (valuePaid >= priceToCrossWater) {
-                System.out.println("Price we need to pay - > " + valuePaid);
-                System.out.println("Score of player - > " + players.get(activePlayerId).getScore());
                 players.get(activePlayerId).subtractScore(valuePaid);
-                System.out.println("Score after subtracting - > " + players.get(activePlayerId).getScore());
-                for (Card card : players.get(activePlayerId).getPathCardStack()) {
-                    System.out.println("Path card stack of player " + players.get(activePlayerId).getPlayerID() + " : " + card.getValue());
-                }
-                ArrayList<Card> tempListToDelete = new ArrayList<>();
-                for (Integer index : paidCardsIndices) {
-                    Card card = players.get(activePlayerId).getPathCardStack().get(index);
-                    tempListToDelete.add(card);
-                }
-                System.out.println("Path card stack before removing - > " + players.get(activePlayerId).getPathCardStack().size());
-                for (Card card : tempListToDelete) {
-                    players.get(activePlayerId).getPathCardStack().remove(card);
-                }
-                System.out.println("Path card stack after removing - > " + players.get(activePlayerId).getPathCardStack().size());
-                for (Card card : players.get(activePlayerId).getPathCardStack()) {
-                    System.out.println("Path card stack of player " + players.get(activePlayerId).getPlayerID() + " : " + card.getValue());
-                }
+                removePaidCardsFromPlayerStack();
+            }else{
+                return false;
             }
         }
         if (paidCardsIndices != null) {
             paidCardsIndices.clear();
         }
+        return true;
+    }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Adds the movement cards that where played to the discard pile and removes the card from the player.
+     */
+    private void addPlayedCardsToDiscardPile() {
         // Remove the movement card played by the player and add it to the discarded cards list
         for (Integer index : playedCardsIndices) {
             Card cardToDiscard = players.get(activePlayerId).getMovementCards().get(index);
@@ -488,18 +555,27 @@ public class GameModel {
             logger.info("GameModel -> Movement card removed: " + players.get(activePlayerId).getMovementCards().remove(card));
         }
         logger.info("GameModel -> Player holds " + players.get(activePlayerId).getMovementCards().size() + " cards.");
+    }
 
-        updateScore();
+    /**
+     * Hermann Grieder
+     * <br>
+     * Updates the score of the player.
+     */
+    private void updateScore() {
+        int scoreToAdd = removePathCardFromPath(targetPathId);
+        System.out.println("Score we add to the player - > " + scoreToAdd);
+        players.get(activePlayerId).addScore(scoreToAdd);
+        System.out.println("Score after adding - > " + players.get(activePlayerId).getScore());
+    }
 
-
-        // Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
-        // that has reached the end, one additional card
-        // This part is checking for each player which one is playing at this moment - if found, it will give
-        // the player as much cards as are allowed regarding the rules -> 0 gamePieces on land = 1 card
-        // 1 gamePiece on land = 2 cards and 2 gamePieces on land = 3 cards.
-
-        boolean gameOver = false;
-
+    /**
+     * Fabian Witschi
+     * <br>
+     * Checks if the game is over by counting the gamePieces that are on the land tile
+     * @return True if a player has 3 gamePieces on the land tile
+     */
+    private boolean checkIfGameOver() {
         for (Player player : players) {
             int count = 0;
             for (GamePiece gamePiece : player.getGamePieces()) {
@@ -508,35 +584,64 @@ public class GameModel {
                 }
             }
             if (count == 3) {
-                gameOver = true;
+                return true;
             }
         }
-        if (!gameOver) {
-            this.deckCardsToAdd = new ArrayList<>();
-            for (Player player : players) {
-                if (player.getPlayerID() == activePlayerId) {
-                    for (int i = 0; i <= player.getGamePiecesOnLand(); i++) {
-                        addCardFromDeckToPlayer();
-                    }
+        return false;
+    }
+
+    /**
+     * Fabian Witschi
+     * <br>
+     * Give the player new movement cards. The amount of cards the player played, plus for each GamePiece
+     * that has reached the end, one additional card
+     * This part is checking for each player which one is playing at this moment - if found, it will give
+     * the player as many cards as are allowed regarding the rules -> 0 gamePieces on land = 1 card
+     * 1 gamePiece on land = 2 cards and 2 gamePieces on land = 3 cards per turn.
+     */
+    private void givePlayerNewCards() {
+        deckCardsToAdd = new ArrayList<>();
+        for (Player player : players) {
+            if (player.getPlayerID() == activePlayerId) {
+                for (int i = 0; i <= player.getGamePiecesOnLand(); i++) {
+                    addCardFromDeckToPlayer();
                 }
             }
         }
+    }
 
+    /**
+     * Hermann Grieder
+     * <br>
+     * Removes the cards that the player used to pay for the crossing from the player stack
+     */
+    private void removePaidCardsFromPlayerStack() {
+        ArrayList<Card> tempListToDelete = new ArrayList<>();
+        for (Integer index : paidCardsIndices) {
+            Card card = players.get(activePlayerId).getPathCardStack().get(index);
+            tempListToDelete.add(card);
+        }
+        for (Card card : tempListToDelete) {
+            players.get(activePlayerId).getPathCardStack().remove(card);
+        }
+    }
+
+
+
+    /**
+     * Hermann Grieder
+     * <br>
+     * Changes the turn count to the next player.
+     */
+    private void increaseTurnCount() {
         // Increase the turn count
         currentTurnLocal++;
         if (currentTurnLocal >= players.size()) {
             currentTurnLocal = 0;
         }
-        logger.info("GameModel -> PlayerTurn: " + this.currentTurnLocal);
-        return true;
     }
 
-    private void updateScore() {
-        int scoreToAdd = removePathCardFromPath(targetPathId);
-        System.out.println("Score we add to the player - > " + scoreToAdd);
-        players.get(activePlayerId).addScore(scoreToAdd);
-        System.out.println("Score after adding - > " + players.get(activePlayerId).getScore());
-    }
+
 
     /**
      * Hermann Grieder
@@ -563,6 +668,10 @@ public class GameModel {
         boolean found = false;
         int nextPathId = startPathId;
         targetPathId = 0;
+
+        // Here we try to find the targetPathId by going through each pathCard and comparing the pathIds
+        // If the nextPathId is 154 then we have not found the target on the normal path and the targetPathId must
+        // be the end card.
         while (!found && nextPathId < 154) {
             for (Card pathCard : pathCards) {
                 if (pathCard.isOnTop()
@@ -576,7 +685,7 @@ public class GameModel {
             nextPathId++;
         }
 
-        // If we cannot find a targetPathId on the path then the next target is the end
+        // If we cannot find a targetPathId on the path, then the next target is the end
         if (!found && nextPathId == 154) {
             targetPathId = 400;
         }
@@ -828,6 +937,7 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
+     * Adds one new deck card to the player after every move.
      */
     private void addCardFromDeckToPlayer() {
         if (deck.size() == 0) {
@@ -844,7 +954,7 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
-     * Reads the incoming Game State Map
+     * Reads the incoming Game State Map.
      *
      * @param gameStateMap The incoming HashMap
      */
@@ -868,7 +978,8 @@ public class GameModel {
     /**
      * Hermann Grieder
      * <br>
-     * Writes the Game State Map with the needed information during the game
+     * Writes the Game State Map with the needed information during the game. The HashMap is then send to the
+     * players where they can update their values with the values from this map.
      *
      * @return HashMap
      */
@@ -887,6 +998,64 @@ public class GameModel {
         return gameStateMap;
     }
 
+    /**
+     * Can Heval Cokyasar
+     *
+     * @param indexOfCard
+     * @return
+     */
+    /**
+     * Fabian Witschi
+     * <br>
+     *
+     * @param indexOfCard
+     * @return
+     */
+    public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
+        ArrayList<Card> purchasedCards = new ArrayList<>();
+        Player player = players.get(currentTurnLocal);
+        int valueOfCardToSell = player.getPathCardStack().get(indexOfCard).getValue();
+        int numberOfCardsToReturn = (valueOfCardToSell) / 2;
+        players.get(currentTurnLocal).subtractScore(valueOfCardToSell);
+        for (int i = 0; i < numberOfCardsToReturn; i++) {
+            purchasedCards.add(deck.get(0));
+            player.getMovementCards().add(deck.get(0));
+            deck.remove(0);
+        }
+        player.getPathCardStack().remove(indexOfCard);
+        return purchasedCards;
+    }
+
+    /**
+     * Fabian Witschi
+     * <br>
+     *
+     * @return ArrayList with two cards from the deck
+     */
+    public ArrayList<Card> handleCantMove() {
+
+        ArrayList<Card> twoCardsForNotMoving = new ArrayList<>();
+
+        Player player = players.get(currentTurnLocal);
+        for (int i = 0; i < 2; i++) {
+            twoCardsForNotMoving.add(deck.get(0));
+            player.getMovementCards().add(deck.get(0));
+            deck.remove(0);
+        }
+        return twoCardsForNotMoving;
+    }
+
+    /**
+     * Fabian Witschi
+     * <br>
+     *
+     * @return
+     */
+    public int handleNewMove() {
+        currentTurnRemote = currentTurnLocal;
+        increaseTurnCount();
+        return currentTurnLocal;
+    }
 
     /**
      * Adds a player to the players list
@@ -907,57 +1076,12 @@ public class GameModel {
     }
 
     /**
-     * Get the players list
+     * Gets the players list
      *
      * @return ArrayList of all players
      */
     public ArrayList<Player> getPlayers() {
         return players;
-    }
-
-    /**
-     * Can Heval Cokyasar
-     *
-     * @param indexOfCard
-     * @return
-     */
-
-    public ArrayList<Card> handleUserCardPurchase(int indexOfCard) {
-        ArrayList<Card> purchasedCards = new ArrayList<>();
-        Player player = players.get(currentTurnLocal);
-        int valueOfCardToSell = player.getPathCardStack().get(indexOfCard).getValue();
-        int numberOfCardsToReturn = (valueOfCardToSell) / 2;
-        players.get(currentTurnLocal).subtractScore(valueOfCardToSell);
-        for (int i = 0; i < numberOfCardsToReturn; i++) {
-            purchasedCards.add(deck.get(0));
-            player.getMovementCards().add(deck.get(0));
-            deck.remove(0);
-        }
-        player.getPathCardStack().remove(indexOfCard);
-        return purchasedCards;
-    }
-
-    public ArrayList<Card> handleCantMove() {
-
-        ArrayList<Card> twoCardsForNotMoving = new ArrayList<>();
-
-        Player player = players.get(currentTurnLocal);
-        for (int i = 0; i < 2; i++) {
-            twoCardsForNotMoving.add(deck.get(0));
-            player.getMovementCards().add(deck.get(0));
-            deck.remove(0);
-        }
-        return twoCardsForNotMoving;
-    }
-
-    public int handleNewMove() {
-        currentTurnRemote = currentTurnLocal;
-
-        currentTurnLocal++;
-        if (currentTurnLocal >= players.size()) {
-            currentTurnLocal = 0;
-        }
-        return currentTurnLocal;
     }
 
 }

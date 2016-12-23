@@ -44,7 +44,7 @@ public class GameController {
         return gameModel.handleCantMove();
     }
 
-    public int handleNewTurn() {
+    public int increaseTurnCount() {
         return gameModel.handleNewMove();
     }
 

@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.logging.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by Hermann Grieder on 16.07.2016.
@@ -29,7 +32,7 @@ public class AtlantisServer {
 
     public static void main(String[] args) throws IOException {
 
-            logger = Logger.getLogger(AtlantisLogger);
+        logger = Logger.getLogger(AtlantisLogger);
 
         configLogger();
 

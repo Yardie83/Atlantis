@@ -6,8 +6,8 @@ import ch.atlantis.util.Message;
 import ch.atlantis.util.MessageType;
 
 import java.sql.*;
-import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 /**
  * Created by Loris Grether on 05.08.2016.

@@ -1,11 +1,7 @@
 package ch.atlantis.game;
 
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import javax.imageio.ImageIO;
-import java.io.File;
 import java.io.Serializable;
 
 /**

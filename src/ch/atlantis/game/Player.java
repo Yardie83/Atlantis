@@ -28,6 +28,9 @@ public class Player implements Serializable {
         addGamePiece();
     }
 
+    /**
+     * Adds a gamePiece to the gamePiece arrayList.
+     */
     private void addGamePiece() {
 
         for (int i = 0; i < 3; i++) {

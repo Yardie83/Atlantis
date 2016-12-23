@@ -1,13 +1,12 @@
 package ch.atlantis.game;
 
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 
 import java.io.Serializable;
 
 /**
  * Created by Hermann Grieder on 07.10.2016.
- * <p>
+ * <br>
  * * A gamePiece extends a JavaFx circle and holds a currentPathId, x and y coordinates.
  */
 public class GamePiece extends Circle implements Serializable {
