@@ -517,6 +517,7 @@ public class GameModel {
             waterPathId = getWaterPathId(pathIdAfter);
         }
 
+        // Fabian Witschi
         if (paidCardsIndices != null && paidCardsIndices.size() != 0) {
             int valuePaid = 0;
 
@@ -1028,10 +1029,12 @@ public class GameModel {
 
     /**
      * Fabian Witschi
-     * <br>
+     * Gives the player who cant move two new cards and puts them into an arraylist which will be sent back to
+     * the requesting client
      *
-     * @return ArrayList with two cards from the deck
+     * @return
      */
+
     public ArrayList<Card> handleCantMove() {
 
         ArrayList<Card> twoCardsForNotMoving = new ArrayList<>();
@@ -1047,10 +1050,12 @@ public class GameModel {
 
     /**
      * Fabian Witschi
-     * <br>
+     * If we have cant move the server increments the new turn by one and sends back the new turn
+     * to the clients
      *
      * @return
      */
+
     public int handleNewMove() {
         currentTurnRemote = currentTurnLocal;
         increaseTurnCount();

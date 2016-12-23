@@ -257,6 +257,9 @@ class ClientThread extends Thread {
 
     /**
      * Fabian Witschi
+     * Gets the cant move message and it will handle it by finding the game and calls the handelCantMove method
+     * at the same time the method sends the new cards back to the client who pressed "cant move" and at the same moment
+     * we send the new turn since the players move is over if he/she cant move.
      *
      * @param message  Incoming message
      */
